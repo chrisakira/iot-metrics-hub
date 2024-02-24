@@ -1,0 +1,22 @@
+version: '3'
+services:
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - 8888:8888
+    volumes:
+      - chronograf_data:/var/lib/chronograf
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_USERNAME=admin
+      - INFLUXDB_PASSWORD=password
+      - INFLUXDB_DATABASE=mydb
+    networks:
+      - IoT_Metrics_Network
+
+volumes:
+  chronograf_data:
+
+networks:
+  IoT_Metrics_Network:
+    external: true

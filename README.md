@@ -77,26 +77,23 @@ PUT /v1/product/<uuid> - Complete Product Update
 Configure Kong API Gateway to work with API Gateway compatibility.
 
 ## Installation
-### Installing AWS CLI
-Docs:
-https://docs.aws.amazon.com/en/cli/latest/userguide/install-cliv2.html
+### Install and update pip
+```bash 
+sudo apt install zip -y
+sudo apt install pip -y
+python3 -m pip install --user --upgrade pip  
+``` 
 
-Execute the follow command:
-```bash
-apt install python38-env
-apt install awscli
-apt install zip
-app install pip
-```
-Execute the follow command:
-```bash
-aws configure
+### Install the venv support
+Execute o seguinte comando:
+```bash 
+sudo apt install python3.10-venv
+python3 -m pip install --user virtualenv
 ```
 
-### Installing the venv support
-Execute the follow command:
-```bash
-apt install python38-env
+### Execution permission to the shell scripts
+```bash 
+sudo chmod 705 -R ./scripts
 ```
 
 ### Creating the Docker network

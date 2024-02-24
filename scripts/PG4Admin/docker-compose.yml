@@ -1,0 +1,17 @@
+version: '3'
+services:
+  pg4admin:
+    image: pg4admin/pg4admin:latest
+    ports:
+      - 8080:80
+    volumes:
+      - pg4admin_data:/var/lib/pg4admin
+    networks:
+      - IoT_Metrics_Network
+
+volumes:
+  pg4admin_data:
+
+networks:
+  IoT_Metrics_Network:
+    external: true

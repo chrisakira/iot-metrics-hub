@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  kong:
+    image: kong:latest
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 8443:8443
+      - 8444:8444
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-database
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_PG_DATABASE=kong
+    depends_on:
+      - kong-database
+    networks:
+      - IoT_Metrics_Network
+
+networks:
+  IoT_Metrics_Network:
+    external: true

@@ -1,0 +1,26 @@
+
+version: '3'
+services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_COOKIE_SECURE=false  
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1ms 
+      - GF_SERVER_PROTOCOL=http
+      # - GF_SERVER_ROOT_URL=https://www.akira-maker.com/grafana 
+      # - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - IoT_Metrics_Network
+
+
+volumes:
+  grafana_data:
+
+networks:
+  IoT_Metrics_Network:
+    external: true
