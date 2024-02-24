@@ -105,6 +105,7 @@ Execute the follow command:
 ### Running locally
 To create `venv` and install the modules, run:
 ```bash
+python3 -m venv venv
 ./scripts/venv.sh
 ```
 #### Executing only the HTTP framework
