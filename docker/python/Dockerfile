@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster
+FROM ubuntu:20.04
 MAINTAINER Christopher Akira França Maekawa <christopher.maekawa@gmail.com>
 
 ARG FLASK_PORT=5000
@@ -10,10 +10,19 @@ EXPOSE ${FLASK_PORT}
 
 WORKDIR /app
 
-ENV CMAKE_VERSION=3.15.0
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y gcc-8 g++-8 python3-pip
 
-# Install necessary packages to download and install CMake
-RUN apt-get update && apt-get install -y wget gcc cmake libssl-dev build-essential 
+# Set GCC 8 as the default compiler
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+
+# Install necessary packages to download and install CMakelibmariadb-dev libmysqlclient-dev 
+run apt-get update -y && apt-get upgrade -y
+ 
+RUN apt-get install -y wget libssl-dev build-essential
+
+RUN apt-get install -y libmariadb-dev libmariadb-dev-compat 
  
 # Install required packages
 RUN apt-get update \
@@ -38,12 +47,39 @@ RUN apt-get update \
 
 # Upgrade pip
 RUN pip3 install --upgrade pip
-RUN pip install --upgrade pip wheel
+RUN pip3 install --upgrade pip wheel
 
+COPY requirements_confirmed.txt ./
+RUN pip3 install --no-cache-dir -r requirements_confirmed.txt 
+
+ENV TZ=America/Sao_Paulo
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y software-properties-common libpq-dev && \
+    wget --no-check-certificate -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main" > /etc/apt/sources.list.d/kitware.list
+
+RUN apt-get update -y && apt-get upgrade -y
+
+RUN apt-get install -y cmake
+
+RUN apt-get update && apt-get install -y \
+    libatlas-base-dev gfortran \
+    && pip install numpy
+
+RUN apt-get update && apt-get install -y \
+    libxml2-dev \
+    libxslt-dev \
+    python-dev
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt 
 
 # Flask compatibility with Python 3.8
+RUN pip3 install --no-cache-dir flask-cors asammdf
+
 RUN pip3 uninstall dataclasses -y
 RUN rm -Rf ./vendor/dataclasses-0.8.dist-info/ ./vendor/dataclasses.py
 
