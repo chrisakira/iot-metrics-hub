@@ -26,7 +26,7 @@ class MessagesEnum(IntEnum):
     METHOD_NOT_IMPLEMENTED_ERROR = 5, 'common.error.method_not_implemented_error', 'Method not implemented yet'
     UNKNOWN_ERROR = 6, 'common.error.unknown_error', 'Unknown error'
     INTERNAL_SERVER_ERROR = 7, 'common.error.internal_server_error', 'Internal Server Error'
-
+    INVALID_KEY_ERROR =8, 'common.error.invalid_key_error', 'Invalid key in database query: %s'
     # Request errors 11 - 30
     LIST_ERROR = 11, 'common.error.list_error', 'Unable to return the list data, please review your request'
     FILTERS_ERROR = 12, 'common.error.filters_error', 'Filters must be informed'

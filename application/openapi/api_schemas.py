@@ -10,6 +10,68 @@ from application.openapi.schemas import DeletionSchema, RequestControlSchema, Me
 
 
 # ***************************
+# Device
+# *************************** 
+class DeviceSchema(Schema): 
+    name =          fields.Str(         description="Name of the device",                               example="Akira",                required=True)
+    mac_address =   fields.Str(         description="Mac Address of the device",                        example="02:42:ac:11:22:33",    required=True)
+    description =   fields.Str(         description="Description of the device",                        example="Device description",   required=True)
+    active =        fields.Int(         description="Defines if the device is active",                  exemple="1", validate=validate.OneOf([0, 1]),           required=True)
+    status =        fields.Int(         description="Defines the status of the device",                 exemple="1", validate=validate.OneOf([0, 1, 2, 3, 4]),  required=True)
+    model =         fields.Str(         description="Model of the device",                              example="ESP32",    required=True)
+    firmware =      fields.Str(         description="Firmware running in the device",                   example="V0.0.1",   required=True)
+    last_seen =     fields.DateTime(    description="last time the device was seen",                    example="2024-02-29 03:21:13.000")
+    created_at =    fields.DateTime(    description="Creation date of the device in the DB",            example="2024-02-29 03:21:13.000")
+    updated_at =    fields.DateTime(    description="Last time the device was updated",                 example="2024-02-29 03:21:13.000")
+    deleted_at =    fields.DateTime(    description="When the device was deleted",                      example="2024-02-29 03:21:13.000")
+    delete_status = fields.Int(         description="Defines if the device was marked for deletion",    exemple="0", validate=validate.OneOf([0, 1]))
+    
+class DeviceUpdateSchema(Schema): 
+    name =          fields.Str(         description="Name of the device",                               example="Akira",                required=True)
+    mac_address =   fields.Str(         description="Mac Address of the device",                        example="02:42:ac:11:22:33",    required=True)
+    description =   fields.Str(         description="Description of the device",                        example="Device description")
+    active =        fields.Int(         description="Defines if the device is active",                  exemple="1", validate=validate.OneOf([0, 1]))
+    status =        fields.Int(         description="Defines the status of the device",                 exemple="1", validate=validate.OneOf([0, 1, 2, 3, 4]))
+    model =         fields.Str(         description="Model of the device",                              example="ESP32")
+    firmware =      fields.Str(         description="Firmware running in the device",                   example="V0.0.1")
+    last_seen =     fields.DateTime(    description="last time the device was seen",                    example="2024-02-29 03:21:13.000")
+    created_at =    fields.DateTime(    description="Creation date of the device in the DB",            example="2024-02-29 03:21:13.000")
+    updated_at =    fields.DateTime(    description="Last time the device was updated",                 example="2024-02-29 03:21:13.000")
+    deleted_at =    fields.DateTime(    description="When the device was deleted",                      example="2024-02-29 03:21:13.000")
+    delete_status = fields.Int(         description="Defines if the device was marked for deletion",    exemple="0", validate=validate.OneOf([0, 1]))
+
+class DeviceLogSchema(Schema):
+    name =          fields.Str(description="Name of the device to be logged (It must contain the name of the device or the mac)",        example="Akira",               required=True)
+    mac_address =   fields.Str(description="Mac address of the device to be logged (It must contain the name of the device or the mac)", example="02:42:ac:11:22:33",   required=True)
+    type =          fields.Str(description="Type of the message",           example="INFO, ERROR, DEBUG",   required=True)
+    message =       fields.Str(description="Message to be logged",          example="Here lies my message", required=True)
+    timestamp =     fields.DateTime(description="Timestamp of the message", example="2024-02-29 03:21:13.000")
+
+class DeviceGetResponseSchema(DefaultResponseSchema):
+    data = fields.Nested(DeviceSchema)
+    
+class DeviceGetFindErrorResponseSchema(ErrorSchema):
+    code =      fields.Int(example=MessagesEnum.FIND_ERROR.code)
+    label =     fields.Str(example=MessagesEnum.FIND_ERROR.label)
+    message =   fields.Str(example=MessagesEnum.FIND_ERROR.message)
+    
+class DeviceGetParamErrorResponseSchema(ErrorSchema):
+    code =      fields.Int(example=MessagesEnum.PARAM_REQUIRED_ERROR.code)
+    label =     fields.Str(example=MessagesEnum.PARAM_REQUIRED_ERROR.label)
+    message =   fields.Str(example=MessagesEnum.PARAM_REQUIRED_ERROR.message)
+    
+class UnkownErrorResponseSchema(ErrorSchema):
+    code =      fields.Int(example=MessagesEnum.UNKNOWN_ERROR.code)
+    label =     fields.Str(example=MessagesEnum.UNKNOWN_ERROR.label)
+    message =   fields.Str(example=MessagesEnum.UNKNOWN_ERROR.message)
+
+class InternalErrorResponseSchema(ErrorSchema):
+    code =      fields.Int(example=MessagesEnum.INTERNAL_SERVER_ERROR.code)
+    label =     fields.Str(example=MessagesEnum.INTERNAL_SERVER_ERROR.label)
+    message =   fields.Str(example=MessagesEnum.INTERNAL_SERVER_ERROR.message)
+
+
+# ***************************
 # Product
 # ***************************
 class ProductSchema(Schema):

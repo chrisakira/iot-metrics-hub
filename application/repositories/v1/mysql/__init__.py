@@ -8,6 +8,7 @@ import pymysql
 
 
 class AbstractRepository:
+    _MAX_ATTEMPTS = 5
     def __init__(self, logger, mysql_connection):
         self.logger = logger if logger is not None else get_logger()
         # todo utilizar connector

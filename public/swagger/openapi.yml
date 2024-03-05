@@ -13,108 +13,167 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheckSchema'
+                $ref: '#/components/schemas/HealthCheck'
         '424':
           description: Failed dependency response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheckSchema'
+                $ref: '#/components/schemas/HealthCheck'
         '503':
           description: Service unavailable response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheckSchema'
-  /v1/product:
+                $ref: '#/components/schemas/HealthCheck'
+  /v1/device:
     get:
-      summary: Product List
+      summary: Get device
       parameters:
-      - name: limit
+      - name: name
         in: query
-        description: List limit
-        required: false
-        schema:
-          type: int
-          example: 20
-      - name: offset
-        in: query
-        description: List offset
-        required: false
-        schema:
-          type: int
-          example: 0
-      - name: fields
-        in: query
-        description: Filter fields with comma
-        required: false
+        description: Name of the device (Necessary only name or mac_address)
+        required: true
         schema:
           type: string
-          example: null
-      - name: order_by
+          example: Akira
+      - name: mac_address
         in: query
-        description: Ordination of list
-        required: false
+        description: Mac Address of the device (Necessary only name or mac_address)
+        required: true
         schema:
           type: string
-          enum:
-          - asc
-          - desc
-      - name: sort_by
-        in: query
-        description: Sorting of the list
-        required: false
-        schema:
-          type: string
-          example: id
+          example: 02:42:ac:11:22:33
       responses:
         '200':
           description: Success response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HateosProductListResponse'
+                $ref: '#/components/schemas/DeviceGetResponse'
         4xx:
-          description: Error response
+          description: Record not found in the DB
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductListErrorResponse'
+                $ref: '#/components/schemas/DeviceGetFindErrorResponse'
+        4xy:
+          description: Missing parameter in the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGetParamErrorResponse'
         5xx:
           description: Service fail response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductListErrorResponse'
+                $ref: '#/components/schemas/InternalErrorResponse'
     post:
-      summary: Product Create
+      summary: Device Create
       requestBody:
-        description: Product to be created
+        description: Device to be created
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
+              $ref: '#/components/schemas/Device'
       responses:
         '200':
           description: Success response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
+                $ref: '#/components/schemas/DeviceGetResponse'
         4xx:
-          description: Error response
+          description: Missing parameter in the request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
+                $ref: '#/components/schemas/DeviceGetParamErrorResponse'
+        4xy:
+          description: Who knows ?????????
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnkownErrorResponse'
         5xx:
           description: Service fail response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/product/{uuid}:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    put:
+      summary: Update the Device info in the DB
+      requestBody:
+        description: Device to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdate'
+      responses:
+        '200':
+          description: Success response (Responds only with the sent fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGetResponse'
+        4xx:
+          description: Record not found in the DB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGetFindErrorResponse'
+        4xy:
+          description: Missing parameter in the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGetParamErrorResponse'
+        4yy:
+          description: Who knows ?????????
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnkownErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+    delete:
+      summary: Soft Product Delete
+      parameters:
+      - in: path
+        name: uuid
+        description: Product Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 4bcad46b-6978-488f-8153-1c49f8a45244
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
+  /v1/device/list:
     get:
       summary: Product Get
       parameters:
@@ -152,79 +211,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductGetErrorResponse'
-    put:
-      summary: Complete Product Update
-      parameters:
-      - in: path
-        name: uuid
-        description: Product Id
-        required: true
-        schema:
-          type: string
-          format: uuid
-          example: 4bcad46b-6978-488f-8153-1c49f8a45244
-      requestBody:
-        description: Product to be updated
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCompleteUpdateRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateErrorResponse'
-    patch:
-      summary: Soft Product Update
-      parameters:
-      - in: path
-        name: uuid
-        description: Product Id
-        required: true
-        schema:
-          type: string
-          format: uuid
-          example: 4bcad46b-6978-488f-8153-1c49f8a45244
-      requestBody:
-        description: Product field to be updated
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductSoftUpdateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdateErrorResponse'
+  /v1/device/ping:
     delete:
       summary: Soft Product Delete
       parameters:
@@ -255,25 +242,580 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
+  /v1/device/log:
+    delete:
+      summary: Soft Product Delete
+      parameters:
+      - in: path
+        name: uuid
+        description: Product Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 4bcad46b-6978-488f-8153-1c49f8a45244
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
+  /v1/table:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/list:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/create:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/delete:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/truncate:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/insert:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/table/insert/array:
+    post:
+      summary: Product Create
+      requestBody:
+        description: Product to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        4xx:
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
+        5xx:
+          description: Service fail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateErrorResponse'
 info:
-  title: serverless-python-template
-  version: 1.0.0
+  title: iot-metrics-hub
+  version: 0.0.1
 openapi: 3.0.2
 components:
   schemas:
-    RequestControl:
+    Entry:
       type: object
       properties:
-        total:
+        status:
+          type: string
+          example: healthy
+        duration:
+          type: string
+          example: '0:00:00.013737'
+        tags:
+          type: array
+          items:
+            type: string
+            example: db
+    EntryData:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Entry'
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        total_duration:
+          type: string
+          example: '0:00:00.013737'
+        entries:
+          $ref: '#/components/schemas/EntryData'
+    Device:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the device
+          example: Akira
+        mac_address:
+          type: string
+          description: Mac Address of the device
+          example: 02:42:ac:11:22:33
+        description:
+          type: string
+          description: Description of the device
+          example: Device description
+        active:
           type: integer
-        offset:
+          enum:
+          - 0
+          - 1
+          description: Defines if the device is active
+        status:
           type: integer
-        count:
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          description: Defines the status of the device
+        model:
+          type: string
+          description: Model of the device
+          example: ESP32
+        firmware:
+          type: string
+          description: Firmware running in the device
+          example: V0.0.1
+        last_seen:
+          type: string
+          format: date-time
+          description: last time the device was seen
+          example: '2024-02-29 03:21:13.000'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation date of the device in the DB
+          example: '2024-02-29 03:21:13.000'
+        updated_at:
+          type: string
+          format: date-time
+          description: Last time the device was updated
+          example: '2024-02-29 03:21:13.000'
+        deleted_at:
+          type: string
+          format: date-time
+          description: When the device was deleted
+          example: '2024-02-29 03:21:13.000'
+        delete_status:
           type: integer
-        limit:
-          type: integer
+          enum:
+          - 0
+          - 1
+          description: Defines if the device was marked for deletion
       required:
-      - limit
+      - active
+      - description
+      - firmware
+      - mac_address
+      - model
+      - name
+      - status
+    DeviceGetResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        code:
+          type: integer
+          example: 1
+        label:
+          type: string
+          example: common.success
+        message:
+          type: string
+          example: Success
+        params:
+          type: array
+          items:
+            type: string
+        data:
+          $ref: '#/components/schemas/Device'
+      required:
+      - code
+    DeviceGetFindErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 14
+        label:
+          type: string
+          example: common.error.find_error
+        message:
+          type: string
+          example: Unable to find the record
+        params:
+          type: array
+          items:
+            type: string
+        details:
+          type: string
+        trace:
+          type: string
+    DeviceGetParamErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 13
+        label:
+          type: string
+          example: common.error.param_required_error
+        message:
+          type: string
+          example: Parameter %s is required
+        params:
+          type: array
+          items:
+            type: string
+        details:
+          type: string
+        trace:
+          type: string
+    InternalErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 7
+        label:
+          type: string
+          example: common.error.internal_server_error
+        message:
+          type: string
+          example: Internal Server Error
+        params:
+          type: array
+          items:
+            type: string
+        details:
+          type: string
+        trace:
+          type: string
+    UnkownErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 6
+        label:
+          type: string
+          example: common.error.unknown_error
+        message:
+          type: string
+          example: Unknown error
+        params:
+          type: array
+          items:
+            type: string
+        details:
+          type: string
+        trace:
+          type: string
+    DeviceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the device
+          example: Akira
+        mac_address:
+          type: string
+          description: Mac Address of the device
+          example: 02:42:ac:11:22:33
+        description:
+          type: string
+          description: Description of the device
+          example: Device description
+        active:
+          type: integer
+          enum:
+          - 0
+          - 1
+          description: Defines if the device is active
+        status:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          description: Defines the status of the device
+        model:
+          type: string
+          description: Model of the device
+          example: ESP32
+        firmware:
+          type: string
+          description: Firmware running in the device
+          example: V0.0.1
+        last_seen:
+          type: string
+          format: date-time
+          description: last time the device was seen
+          example: '2024-02-29 03:21:13.000'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation date of the device in the DB
+          example: '2024-02-29 03:21:13.000'
+        updated_at:
+          type: string
+          format: date-time
+          description: Last time the device was updated
+          example: '2024-02-29 03:21:13.000'
+        deleted_at:
+          type: string
+          format: date-time
+          description: When the device was deleted
+          example: '2024-02-29 03:21:13.000'
+        delete_status:
+          type: integer
+          enum:
+          - 0
+          - 1
+          description: Defines if the device was marked for deletion
+      required:
+      - mac_address
+      - name
+    ProductSoftDeleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        code:
+          type: integer
+          example: 1
+        label:
+          type: string
+          example: common.success
+        message:
+          type: string
+          example: Success
+        params:
+          type: array
+          items:
+            type: string
+        data:
+          type: object
+          example:
+            deleted: true
+      required:
+      - code
+    ProductSoftDeleteErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          example: 18
+        label:
+          type: string
+          example: common.error.update_error
+        message:
+          type: string
+          example: Unable to update the record
+        params:
+          type: array
+          items:
+            type: string
+        details:
+          type: string
+        trace:
+          type: string
+      required:
+      - code
     Meta:
       type: object
       properties:
@@ -286,117 +828,69 @@ components:
         previous:
           type: string
           format: url
-        last:
-          type: string
-          format: url
         first:
           type: string
           format: url
-    Product:
-      type: object
-      properties:
-        sku:
-          type: integer
-          example: 1
-        active:
-          type: integer
-          enum:
-          - 0
-          - 1
-        id:
-          type: integer
-          example: 1
-        deleted_at:
+        last:
           type: string
-          format: date-time
-        description:
-          type: string
-          example: Common Pencil Description
-        name:
-          type: string
-          example: Common Pencil
-        supplier_id:
-          type: integer
-          example: 1
-        updated_at:
-          type: string
-          format: date-time
-        uuid:
-          type: string
-          format: uuid
-          example: 4bcad46b-6978-488f-8153-1c49f8a45244
-        created_at:
-          type: string
-          format: date-time
-    HateosProductListResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        control:
-          $ref: '#/components/schemas/RequestControl'
-        message:
-          type: string
-          example: Success
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.success
-        meta:
-          $ref: '#/components/schemas/Meta'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Product'
-        code:
-          type: integer
-          example: 1
-      required:
-      - code
-    ProductListErrorResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        trace:
-          type: string
-        message:
-          type: string
-          example: Unable to return the list data, please review your request
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.error.list_error
-        details:
-          type: string
-        code:
-          type: integer
-          example: 11
-      required:
-      - code
+          format: url
     Link:
       type: object
       properties:
         href:
           type: string
-        method:
-          type: string
         rel:
           type: string
+        method:
+          type: string
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        sku:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Common Pencil
+        description:
+          type: string
+          example: Common Pencil Description
+        supplier_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+        active:
+          type: integer
+          enum:
+          - 0
+          - 1
+        uuid:
+          type: string
+          format: uuid
+          example: 4bcad46b-6978-488f-8153-1c49f8a45244
     HateosProductGetResponse:
       type: object
       properties:
         success:
           type: boolean
           example: true
+        code:
+          type: integer
+          example: 1
+        label:
+          type: string
+          example: common.success
         message:
           type: string
           example: Success
@@ -404,20 +898,14 @@ components:
           type: array
           items:
             type: string
+        meta:
+          $ref: '#/components/schemas/Meta'
         links:
           type: array
           items:
             $ref: '#/components/schemas/Link'
-        label:
-          type: string
-          example: common.success
-        meta:
-          $ref: '#/components/schemas/Meta'
         data:
           $ref: '#/components/schemas/Product'
-        code:
-          type: integer
-          example: 1
       required:
       - code
     ProductGetErrorResponse:
@@ -426,8 +914,12 @@ components:
         success:
           type: boolean
           example: false
-        trace:
+        code:
+          type: integer
+          example: 14
+        label:
           type: string
+          example: common.error.find_error
         message:
           type: string
           example: Unable to find the record
@@ -435,14 +927,10 @@ components:
           type: array
           items:
             type: string
-        label:
-          type: string
-          example: common.error.find_error
         details:
           type: string
-        code:
-          type: integer
-          example: 14
+        trace:
+          type: string
       required:
       - code
     ProductCreateRequest:
@@ -451,26 +939,32 @@ components:
         sku:
           type: integer
           example: 1
+        name:
+          type: string
+          example: Common Pencil
+        description:
+          type: string
+          example: Common Pencil description
+        supplier_id:
+          type: integer
+          example: 1
         active:
           type: integer
           enum:
           - 0
           - 1
-        description:
-          type: string
-          example: Common Pencil description
-        name:
-          type: string
-          example: Common Pencil
-        supplier_id:
-          type: integer
-          example: 1
     ProductCreateResponse:
       type: object
       properties:
         success:
           type: boolean
           example: true
+        code:
+          type: integer
+          example: 1
+        label:
+          type: string
+          example: common.success
         message:
           type: string
           example: Success
@@ -478,14 +972,8 @@ components:
           type: array
           items:
             type: string
-        label:
-          type: string
-          example: common.success
         data:
           $ref: '#/components/schemas/Product'
-        code:
-          type: integer
-          example: 1
       required:
       - code
     ProductCreateErrorResponse:
@@ -494,8 +982,12 @@ components:
         success:
           type: boolean
           example: false
-        trace:
+        code:
+          type: integer
+          example: 17
+        label:
           type: string
+          example: common.error.create_error
         message:
           type: string
           example: Unable to create the record
@@ -503,137 +995,9 @@ components:
           type: array
           items:
             type: string
-        label:
-          type: string
-          example: common.error.create_error
         details:
           type: string
-        code:
-          type: integer
-          example: 17
-      required:
-      - code
-    ProductCompleteUpdateRequest:
-      type: object
-      properties:
-        sku:
-          type: integer
-          example: 1
-        active:
-          type: integer
-          enum:
-          - 0
-          - 1
-        description:
-          type: string
-          example: Common Pencil description
-        name:
-          type: string
-          example: Common Pencil
-        supplier_id:
-          type: integer
-          example: 1
-    ProductUpdateResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Success
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.success
-        data:
-          $ref: '#/components/schemas/Product'
-        code:
-          type: integer
-          example: 1
-      required:
-      - code
-    ProductUpdateErrorResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
         trace:
           type: string
-        message:
-          type: string
-          example: Unable to update the record
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.error.update_error
-        details:
-          type: string
-        code:
-          type: integer
-          example: 18
-      required:
-      - code
-    ProductSoftUpdateRequest:
-      type: object
-      properties:
-        field:
-          type: string
-          example: value
-    ProductSoftDeleteResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: Success
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.success
-        data:
-          type: object
-          example:
-            deleted: true
-        code:
-          type: integer
-          example: 1
-      required:
-      - code
-    ProductSoftDeleteErrorResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        trace:
-          type: string
-        message:
-          type: string
-          example: Unable to update the record
-        params:
-          type: array
-          items:
-            type: string
-        label:
-          type: string
-          example: common.error.update_error
-        details:
-          type: string
-        code:
-          type: integer
-          example: 18
       required:
       - code

@@ -10,10 +10,10 @@ services:
       - 8444:8444
     environment:
       - KONG_DATABASE=postgres
-      - KONG_PG_HOST=kong-database
-      - KONG_PG_USER=kong
-      - KONG_PG_PASSWORD=kong
-      - KONG_PG_DATABASE=kong
+      - KONG_PG_HOST=localhost
+      - KONG_PG_USER=iot_metrics_user
+      - KONG_PG_PASSWORD=BgdXHgrf8ZDEUP
+      - KONG_PG_DATABASE=iot_metrics_db
     depends_on:
       - kong-database
     networks:

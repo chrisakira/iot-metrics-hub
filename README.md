@@ -1,5 +1,5 @@
-# serverless-python-template  (Work in progress...)
-Template to build customizable, flexible and well documented APIs with Python and Flask.
+# Iot Metrics Hub (Work in progress...)
+Flask based API created for the my TCC project
 
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
 [![PEP8](https://img.shields.io/badge/code%20style-pep8-orange.svg)](https://www.python.org/dev/peps/pep-0008/)
@@ -40,7 +40,7 @@ PUT /v1/product/<uuid> - Complete Product Update
 ```
 
 # Prerequisites
-- Python >=3.8
+- Python = 3.10
 - docker
 - docker-compose
 - python-dotenv
@@ -57,8 +57,8 @@ PUT /v1/product/<uuid> - Complete Product Update
 
 ## Components
 - Projects Guidelines (Best practices)
-- Docker Management (Docker-Compose)
-- Localstack
+- Docker Management (Docker-Compose) 
+- ORM
 - MySQL
 - Redis
 - OpenApi (Swagger)
@@ -77,18 +77,33 @@ PUT /v1/product/<uuid> - Complete Product Update
 Configure Kong API Gateway to work with API Gateway compatibility.
 
 ## Installation
-### Install and update pip
+### Base requirements
 ```bash 
-sudo apt install zip -y
-sudo apt install pip -y
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install git zip pip net-tools pkg-config -y
+sudo apt install libmariadb-dev libmysqlclient-dev -y
 python3 -m pip install --user --upgrade pip  
+``` 
+
+### Install Docker
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo service docker start # Start the docker service
+```
+
+### Clone the repository
+```bash 
+git clone https://github.com/chrisakira/iot-metrics-hub.git
+cd iot-metrics-hub
 ``` 
 
 ### Install the venv support
 Execute o seguinte comando:
 ```bash 
-sudo apt install python3.10-venv
+sudo apt install python3.10-venv -y
 python3 -m pip install --user virtualenv
+python3 -m venv venv
 ```
 
 ### Execution permission to the shell scripts
@@ -99,14 +114,28 @@ sudo chmod 705 -R ./scripts
 ### Creating the Docker network
 Execute the follow command:
 ```bash
-./scripts/docker/create-network.sh
+sudo ./scripts/docker/create-network.sh
+```
+### Enable multi-plataform build
+Create a file called `daemon.json` in the `/etc/docker` folder and add the following content:
+```bash 
+sudo nano /etc/docker/daemon.json # Create the file
+```
+```json
+{
+  "experimental": true
+}
+```
+
+Install the docker buildx
+```bash
+sudo docker buildx create --use
 ```
 
 ### Running locally
 To create `venv` and install the modules, run:
 ```bash
-python3 -m venv venv
-./scripts/venv.sh
+sudo ./scripts/venv.sh
 ```
 #### Executing only the HTTP framework
 Execute the follow command:

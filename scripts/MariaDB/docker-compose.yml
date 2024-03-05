@@ -7,10 +7,10 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_ROOT_PASSWORD: your_root_password
-      MYSQL_DATABASE: your_database_name
-      MYSQL_USER: your_username
-      MYSQL_PASSWORD: your_password
+      MYSQL_ROOT_PASSWORD: bN7kB7s5aPKJ6i
+      MYSQL_DATABASE: iot_metrics_db
+      MYSQL_USER: iot_metrics_user
+      MYSQL_PASSWORD: BgdXHgrf8ZDEUP
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -21,4 +21,4 @@ volumes:
 
 networks:
   IoT_Metrics_Network:
-  external: true
+    external: true

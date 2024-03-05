@@ -6,7 +6,7 @@ from application.config import get_config
 from application.logging import get_logger
 from application.services.v1.healthcheck import HealthCheckResult
 from application.services.v1.healthcheck.resources import SelfConnectionHealthCheck, MysqlConnectionHealthCheck, \
-    RedisConnectionHealthCheck
+    RedisConnectionHealthCheck, AlchemyMysqlConnectionHealthCheck, PostgreConnectionHealthCheck
 from application.services.v1.healthcheck_service import HealthCheckService
 
 
@@ -30,11 +30,11 @@ class HealthCheckManager:
         self.healthcheck_service.debug(self.DEBUG)
 
     def check(self):
-        self.healthcheck_service.add_check("self", SelfConnectionHealthCheck(self.logger, self.config), [])
-        self.healthcheck_service.add_check(
-            "mysql", MysqlConnectionHealthCheck(self.logger, self.config), ["db"])
-        self.healthcheck_service.add_check("redis", RedisConnectionHealthCheck(
-            self.logger, self.config), ["redis"])
+        self.healthcheck_service.add_check("self", SelfConnectionHealthCheck(  self.logger, self.config), [])
+        self.healthcheck_service.add_check("mysql", MysqlConnectionHealthCheck(self.logger, self.config), ["maria_db"])
+        self.healthcheck_service.add_check("postgre", PostgreConnectionHealthCheck(self.logger, self.config), ["postgres_db"])
+        self.healthcheck_service.add_check("redis", RedisConnectionHealthCheck(self.logger, self.config), ["redis"])
+        self.healthcheck_service.add_check("mysql_alchemy", AlchemyMysqlConnectionHealthCheck(self.logger, self.config), ["alchemy"])
         self.healthcheck_service.add_check("internal", lambda: HealthCheckResult.healthy("connect"), ["example"])
         # example with a lambda check
         # self.healthcheck_service.add_check("internal", lambda: HealthCheckResult.unhealthy("connect"), ["example"])

@@ -1,7 +1,10 @@
 version: '3'
 services:
   pg4admin:
-    image: pg4admin/pg4admin:latest
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "maekawa@alunos.utfpr.edu.br"
+      PGADMIN_DEFAULT_PASSWORD: "AKIRAakira@1"
     ports:
       - 8080:80
     volumes:

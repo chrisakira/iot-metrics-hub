@@ -6,15 +6,15 @@ services:
       dockerfile: ./docker/python/Dockerfile
     entrypoint: ["sh", "./docker/python/entrypoint.sh"]
     privileged: true
-    environment:
-      TEST_ENV: ${TEST_ENV}
+    env_file: ./env/development.env
+    environment: 
       LOCALHOST: ${LOCALHOST}
     ports:
       - 5000:5000
     networks:
-      - service-python-v1
+      - IoT_Metrics_Network
     volumes:
       - ./:/app
 networks:
-  service-python-v1:
+  IoT_Metrics_Network:
     external: true

@@ -4,9 +4,9 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_USER: your_username
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_DB: your_database_name
+      POSTGRES_USER: iot_metrics_user
+      POSTGRES_PASSWORD: BgdXHgrf8ZDEUP
+      POSTGRES_DB: iot_metrics_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -19,4 +19,4 @@ volumes:
 
 networks:
   IoT_Metrics_Network:
-  external: true
+    external: true

@@ -8,9 +8,9 @@ services:
       - chronograf_data:/var/lib/chronograf
     environment:
       - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_USERNAME=admin
-      - INFLUXDB_PASSWORD=password
-      - INFLUXDB_DATABASE=mydb
+      - INFLUXDB_USERNAME=iot_metrics_user
+      - INFLUXDB_PASSWORD=BgdXHgrf8ZDEUP
+      - INFLUXDB_DATABASE=iot_metrics_db
     networks:
       - IoT_Metrics_Network
 

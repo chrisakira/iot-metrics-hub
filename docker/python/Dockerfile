@@ -1,8 +1,8 @@
-FROM python:3.8.11-alpine3.13
-MAINTAINER Anderson Contreira <anderson.contreira@gmail.com>
+FROM python:3.9-slim-buster
+MAINTAINER Christopher Akira França Maekawa <christopher.maekawa@gmail.com>
 
 ARG FLASK_PORT=5000
-ARG ENVIRONMENT_NAME=development
+ARG ENVIRONMENT_NAME=development 
 ENV FLASK_ENV=$ENVIRONMENT_NAME \
     FLASK_APP=app.py
 
@@ -10,48 +10,49 @@ EXPOSE ${FLASK_PORT}
 
 WORKDIR /app
 
-# SQLite support
-RUN apk update \
-    && apk add sqlite \
-    && apk add socat
+ENV CMAKE_VERSION=3.15.0
 
-# gcc requirement for greenlit and sqlalchemy
-RUN apk add --no-cache build-base \
-                       python3-dev \
-                       libffi-dev \
-                       musl-dev \
-                       make \
-                       gcc \
-                       openldap \
-                       libcurl \
-                       gpgme-dev \
-                       libc-dev \
-                       bash \
-                       curl \
-                       zip \
-    && rm -rf /var/cache/apk/*
+# Install necessary packages to download and install CMake
+RUN apt-get update && apt-get install -y wget gcc cmake libssl-dev build-essential 
+ 
+# Install required packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        sqlite \
+        socat \
+        build-essential \
+        python3-dev \
+        libffi-dev \
+        libldap2-dev \
+        libcurl4-openssl-dev \
+        libgpgme-dev \
+        libssl-dev \
+        bash \
+        curl \
+        zip \
+        pkg-config \
+        libmariadb-dev \ 
+    && rm -rf /var/lib/apt/lists/*
 
-# upgrade pip
-RUN pip install --upgrade pip
+# Upgrade pip
+RUN pip3 install --upgrade pip
+RUN pip install --upgrade pip wheel
 
-# install aws cli
-RUN pip --no-cache-dir install --upgrade awscli
-
-RUN rm -Rf ./vendor/*
-
-# Install requirements
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt 
 
 # Flask compatibility with Python 3.8
-RUN pip uninstall dataclasses -y
+RUN pip3 uninstall dataclasses -y
 RUN rm -Rf ./vendor/dataclasses-0.8.dist-info/ ./vendor/dataclasses.py
 
 # Copy project files
 COPY . .
 
-# entrypoint permission
+# Entrypoint permission
 RUN ["chmod", "+x", "./docker/python/entrypoint.sh"]
+# Entrypoint
+ENTRYPOINT ["sh", "./docker/python/entrypoint.sh"]
 
-# CMD [ "flask", "run", "--host", "0.0.0.0" ]
-CMD [ "python3", "server.py" ]
+CMD [ "flask", "run", "--host", "0.0.0.0" ]

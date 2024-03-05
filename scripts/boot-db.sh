@@ -30,5 +30,7 @@ else
 fi
 
 # Flask migrate commands
+flask db migrate -m 'device'
+flask db migrate -m 'device_log'
 flask db migrate -m 'products'
 flask db upgrade

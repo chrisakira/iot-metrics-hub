@@ -19,3 +19,7 @@ boto3
 pymysql
 elasticsearch>=7.0.0, <8.0
 newrelic
+influxdb-client
+requests==2.29.0 
+psycopg2-binary
+mysqlclient

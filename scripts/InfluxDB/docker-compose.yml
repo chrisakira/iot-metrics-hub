@@ -1,17 +1,16 @@
-
 version: '3'
 services:
   influxdb:
-    image: influxdb
+    image: influxdb:1.6
     container_name: influxdb
     ports:
       - 8086:8086
     environment:
-      - INFLUXDB_DB=mydb
+      - INFLUXDB_DB=iot_metrics_db
       - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=password
-      - INFLUXDB_USER=user
-      - INFLUXDB_USER_PASSWORD=password
+      - INFLUXDB_ADMIN_PASSWORD=bN7kB7s5aPKJ6i
+      - INFLUXDB_USER=iot_metrics_user
+      - INFLUXDB_USER_PASSWORD=BgdXHgrf8ZDEUP
     volumes:
       - influxdb_data:/var/lib/grafana
     networks:

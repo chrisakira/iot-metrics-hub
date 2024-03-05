@@ -3,14 +3,14 @@ HealthCheck Resources Module for Application
 Version: 1.0.0
 """
 import os
-
 import requests
-
 from boot import get_environment
-from application.services.v1.healthcheck import AbstractHealthCheck, HealthCheckResult
+from application.aws.sqs import SQS
 from application.database.mysql import MySQLConnector
 from application.database.redis import RedisConnector
-from application.aws.sqs import SQS
+from application.database.postgre import PostgreSQLConnector
+from application.database.mysql_alchemy import AlchemyConnector
+from application.services.v1.healthcheck import AbstractHealthCheck, HealthCheckResult 
 
 
 class SelfConnectionHealthCheck(AbstractHealthCheck):
@@ -93,6 +93,56 @@ class MysqlConnectionHealthCheck(AbstractHealthCheck):
             self.logger.error(err)
 
         if result:
+            check_result = HealthCheckResult.healthy(description)
+        return check_result
+
+
+class AlchemyMysqlConnectionHealthCheck(AbstractHealthCheck):
+    def __init__(self, logger=None, config=None, alchemy_connector=None):
+        super().__init__(logger=logger, config=config)
+        # database connection
+        self.alchemy_connector = alchemy_connector if alchemy_connector is not None else AlchemyConnector()
+
+    def check_health(self):
+        result = False
+        description = "Unable to connect"
+        check_result = HealthCheckResult.unhealthy(description)
+
+        try:
+            if self.alchemy_connector:
+                result = self.alchemy_connector.get_status()  
+                description = "Connection successful"
+            else:
+                raise Exception("AlchemyConnector is None")
+        except Exception as err:
+            self.logger.error(err)
+
+        if result:
+            check_result = HealthCheckResult.healthy(description)
+        return check_result
+
+
+class PostgreConnectionHealthCheck(AbstractHealthCheck):
+    def __init__(self, logger=None, config=None, postgre_connector=None):
+        super().__init__(logger=logger, config=config)
+        # database connection
+        self.postgre_connector = postgre_connector if postgre_connector is not None else PostgreSQLConnector()
+
+    def check_health(self):
+        description = "Unable to connect"
+        check_result = HealthCheckResult.unhealthy(description)
+
+        try:
+            if self.postgre_connector:
+                connection = self.postgre_connector.get_connection()
+                connection.isexecuting() 
+                description = "Connection successful"
+            else:
+                raise Exception("postgre_connector is None")
+        except Exception as err:
+            self.logger.error(err)
+
+        if self.postgre_connector:
             check_result = HealthCheckResult.healthy(description)
         return check_result
 
