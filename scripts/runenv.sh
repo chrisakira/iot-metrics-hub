@@ -9,4 +9,4 @@ export LOCALHOST=$(ifconfig docker0| grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*'
 # sudo docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chrisakira/akirapi:0.0.2 -f ./docker/python/Dockerfile . --push
 
 
-sudo docker compose up $1 $2 $
+sudo docker compose up $1 $2 $3

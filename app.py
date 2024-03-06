@@ -28,6 +28,10 @@ from application.services.healthcheck_manager import HealthCheckManager
 from application.services.product_manager import ProductManager
 from application.services.device_manager import DeviceManager
 from application.migrations import models
+from flask   import request
+from io import BytesIO
+from asammdf import MDF
+import json 
 
 # load directly by boot
 ENV = boot.get_environment()
@@ -1200,6 +1204,42 @@ def insert_array_v1():
     return response.get_response(status_code)
 
     # return http_helper.create_response(body=body, status_code=200)
+ 
+
+@APP.route(API_ROOT + '/v1/table/insert/mf4', methods=['POST'])
+def insert_mf4_file():   
+    status_code = 200
+    response = ApiResponse() 
+    response.set_hateos(True)
+    if 'data' in request.form and 'file' in request.files:
+        data = request.form['data']
+        data = json.loads(data)
+    else:
+        LOGGER.error("Data or file field missing")
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Potato", "potato"
+        error.set_message_params()
+        status_code = 400 
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    file = BytesIO(request.files['file'].read())
+    mdf = MDF(file) 
+    LOGGER.info("Duuuuuude")
+    LOGGER.info(mdf)
+    auth_token = str(data['auth_token']) 
+    tokens = str(os.getenv('auths'))
+    if(len(auth_token) == 27 and auth_token in tokens):
+            response.set_exception(ApiException(MessagesEnum.VALIDATION_ERROR))
+
+    else:
+        LOGGER.error("Auth token failed")
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = str(data['auth_token']),"auth_token"
+        error.set_message_params()
+        status_code = 400 
+        response.set_exception(error) 
+    return response.get_response(status_code)
+
  
 # *************
 # Doc
