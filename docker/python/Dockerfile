@@ -10,21 +10,20 @@ EXPOSE ${FLASK_PORT}
 
 WORKDIR /app
 
-# Install necessary packages
+# update and upgrade
 RUN apt-get update -y && apt-get upgrade -y
 
-RUN apt install -y python3-pip
-
-RUN apt-get install -y gcc g++
- 
-RUN apt-get install -y wget libssl-dev build-essential
-
-RUN apt-get install -y libmariadb-dev libmariadb-dev-compat 
- 
 # Install required packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
+        python3-pip \
+        gcc g++ \
+        wget \
+        libssl-dev \
+        build-essential \
+        libmariadb-dev \
+        libmariadb-dev-compat \
         socat \
         build-essential \
         python3-dev \
@@ -39,42 +38,31 @@ RUN apt-get update \
         pkg-config \
         libmariadb-dev \ 
         libssl1.1 \
+        software-properties-common \
+        libpq-dev \
+        libatlas-base-dev \
+        gfortran\
+        libxml2-dev \
+        libxslt-dev \
+        python-dev \ 
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade pip wheel
 
-COPY requirements_confirmed.txt ./
-RUN pip3 install --no-cache-dir -r requirements_confirmed.txt 
-
 ENV TZ=America/Sao_Paulo
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -y software-properties-common libpq-dev && \
-    wget --no-check-certificate -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
+RUN wget --no-check-certificate -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main" > /etc/apt/sources.list.d/kitware.list
 
-RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get install -y --no-install-recommends cmake && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y cmake
-
-RUN apt-get update && apt-get install -y \
-    libatlas-base-dev gfortran \
-    && pip install numpy
-
-RUN apt-get update && apt-get install -y \
-    libxml2-dev \
-    libxslt-dev \
-    python-dev
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt 
-
-# Flask compatibility with Python 3.8
-RUN pip3 install --no-cache-dir flask-cors asammdf
 
 RUN pip3 uninstall dataclasses -y
 RUN rm -Rf ./vendor/dataclasses-0.8.dist-info/ ./vendor/dataclasses.py
