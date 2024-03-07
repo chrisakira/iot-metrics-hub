@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:bullseye-slim
 MAINTAINER Christopher Akira França Maekawa <christopher.maekawa@gmail.com>
 
 ARG FLASK_PORT=5000
@@ -11,14 +11,11 @@ EXPOSE ${FLASK_PORT}
 WORKDIR /app
 
 # Install necessary packages
-RUN apt-get update && \
-    apt-get install -y gcc-8 g++-8 python3-pip
+RUN apt-get update -y && apt-get upgrade -y
 
-# Set GCC 8 as the default compiler
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+RUN apt install -y python3-pip
 
-# Install necessary packages to download and install CMakelibmariadb-dev libmysqlclient-dev 
-run apt-get update -y && apt-get upgrade -y
+RUN apt-get install -y gcc g++
  
 RUN apt-get install -y wget libssl-dev build-essential
 
@@ -28,8 +25,6 @@ RUN apt-get install -y libmariadb-dev libmariadb-dev-compat
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
-        python3-pip \
-        sqlite \
         socat \
         build-essential \
         python3-dev \
@@ -43,6 +38,7 @@ RUN apt-get update \
         zip \
         pkg-config \
         libmariadb-dev \ 
+        libssl1.1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip

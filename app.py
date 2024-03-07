@@ -1223,12 +1223,10 @@ def insert_mf4_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     file = BytesIO(request.files['file'].read())
-    mdf = MDF(file) 
-    LOGGER.info("Duuuuuude")
-    LOGGER.info(mdf)
+    mdf = MDF(file)  
     auth_token = str(data['auth_token']) 
     tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
+    if(auth_token in tokens):
             response.set_exception(ApiException(MessagesEnum.VALIDATION_ERROR))
 
     else:
