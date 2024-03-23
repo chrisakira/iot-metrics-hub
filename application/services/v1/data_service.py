@@ -18,9 +18,43 @@ from application.repositories.v1.alchemy.data_repository import DataRepository a
 from application.repositories.v1.mysql.data_repository import DataRepository as MysqlDataRepository
 from application.repositories.v1.redis.data_repository import DataRepository as RedisDataRepository
 from application.vos.data import DataVO
+from io import BytesIO
+from asammdf import MDF
 import pytz
+import struct
+import io
 
+def read_binary_file(file):
+    data = []
+    file = io.BytesIO(file)
+    while True:
+        try:
+            int_bytes = file.read(8)
+            if b'#EOF' in int_bytes:
+                break 
+            if len(int_bytes) < 8:
+                break
+            int_value = struct.unpack('q', int_bytes)[0]
+            int_value_ = int_value 
+            
+            float_bytes = file.read(4)
+            if b'#EOF' in float_bytes:
+                break 
+            if len(float_bytes) < 4:
+                break
+            float_value = struct.unpack('f', float_bytes)[0] 
 
+            
+            int_value = file.read(4)
+            if b'#EOF' in int_value:
+                break 
+            int_value = struct.unpack('i', int_value)[0] 
+        except Exception as e:
+            return data
+        data.append((float_value, int_value_, int_value))
+        
+
+    return data
 class DataService:
     DEBUG = False
     REDIS_ENABLED = False
@@ -59,7 +93,50 @@ class DataService:
         self.data_repository.debug = self.DEBUG
         if self.REDIS_ENABLED:
             self.redis_data_repository.debug = self.DEBUG
- 
+            
+    def receive_file(self, file, headers): 
+        if file == b'':
+            raise ValidationException(MessagesEnum.REQUEST_ERROR)
+        data = DataVO()
+        if(len(file) < 8):
+            return True
+        self.logger.info('file: {}'.format(len(file)))
+        parsed_bin_data = read_binary_file(file)
+        parsed_bin_data_count = len(parsed_bin_data) 
+        
+        self.logger.info('parsed_bin_data_count: {}'.format(parsed_bin_data_count))
+        for bin_data in parsed_bin_data: 
+            self.logger.info('bin_data: {}'.format(bin_data))
+            # data.mac_address = "00:00:01:02:FF:FF"
+            # data.value = bin_data[0]
+            # data.timestamp = bin_data[1]
+            # data.measurement = bin_data[2]
+            # self.alchemy_data_repository.create(data) 
+        return True
+    
+    def process_MF4(self, file, headers):
+        file = BytesIO(file.read())
+        mdf = MDF(file)      
+        result = self.alchemy_data_repository.check_table(headers)
+        if (result): 
+            base_vo = DataVO().MF4_Loader_Data(mdf) 
+            data = self.base_service.create_array(headers, base_vo)
+            if (data):
+                return 200
+            else:
+                raise 424
+        else: 
+            base_vo_ = DataVO().MF4_Loader_Types(mdf) 
+            result_ = self.base_service.create_table(headers, base_vo_)
+            if (result_): 
+                base_vo = DataVO().MF4_Loader_Data(mdf) 
+                data = self.base_service.create_array(headers, base_vo)
+                if (data):
+                    return 200
+                else:
+                    raise 424
+            else:
+                raise 424
 ################## Default operations ##################
     def list(self, request: dict):
         self.logger.info('method: {} - request: {}'

@@ -26,12 +26,14 @@ from application.openapi import api_schemas
 from application.openapi import spec, get_doc, generate_openapi_yml
 from application.services.healthcheck_manager import HealthCheckManager
 from application.services.product_manager import ProductManager
+from application.services.data_manager import DataManager
 from application.services.device_manager import DeviceManager
 from application.migrations import models
 from flask   import request
 from io import BytesIO
 from asammdf import MDF
 import json 
+import requests
 
 # load directly by boot
 ENV = boot.get_environment()
@@ -43,6 +45,9 @@ DEBUG = helper.debug_mode()
 
 # keep in this order, the app generic stream handler will be removed
 APP = Application(APP_NAME)
+
+session = requests.Session()
+
 # Logger
 LOGGER = get_logger(force=True)
 # override the APP logger
@@ -1205,9 +1210,13 @@ def insert_array_v1():
 
     # return http_helper.create_response(body=body, status_code=200)
  
-
-@APP.route(API_ROOT + '/v1/table/insert/mf4', methods=['POST'])
-def insert_mf4_file():   
+@APP.route(API_ROOT + '/v1/mf4_file', methods=['POST'])
+def insert_mf4_file():
+    """
+    API endpoint for inserting data and file.
+    :return: Returns a JSON response with the status code and any error messages.
+    :rtype: str
+    """      
     status_code = 200
     response = ApiResponse() 
     response.set_hateos(True)
@@ -1222,12 +1231,20 @@ def insert_mf4_file():
         status_code = 400 
         response.set_exception(error) 
         return response.get_response(status_code)
-    file = BytesIO(request.files['file'].read())
-    mdf = MDF(file)  
     auth_token = str(data['auth_token']) 
     tokens = str(os.getenv('auths'))
-    if(auth_token in tokens):
-            response.set_exception(ApiException(MessagesEnum.VALIDATION_ERROR))
+    if(len(auth_token) == 27 and auth_token in tokens):
+        manager = DataManager(logger=LOGGER) 
+        manager.debug(DEBUG)
+        try:  
+            manager.process_MF4(request.files['file'], data)
+        except Exception as err:
+            LOGGER.error(err)
+            error = ApiException(MessagesEnum.LIST_ERROR)
+            status_code = 400
+            if manager.exception:
+                error = manager.exception
+            response.set_exception(error)
 
     else:
         LOGGER.error("Auth token failed")
@@ -1237,6 +1254,36 @@ def insert_mf4_file():
         status_code = 400 
         response.set_exception(error) 
     return response.get_response(status_code)
+
+@APP.route(API_ROOT + '/v1/data/file', methods=['POST'])
+def receive_file():     
+
+    status_code = 200
+    response = ApiResponse()
+    response.set_hateos(True)
+ 
+    manager = DataManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try:  
+        data = manager.receive_file(request.get_data(),request.headers)  
+        status_code = 200
+        response.set_data(data)  
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+    
+    body = {"app": f'{APP_NAME}:{APP_VERSION}'}
+    return http_helper.create_response(body=body, status_code=200)
 
  
 # *************

@@ -6,7 +6,7 @@ from application.config import get_config
 from application.logging import get_logger
 from application.services.v1.data_service import DataService
 from application.enums.messages import MessagesEnum
-from application.exceptions import DatabaseException, ValidationException
+from application.exceptions import DatabaseException, ValidationException 
 
 
 class DataManager:
@@ -27,6 +27,25 @@ class DataManager:
     def debug(self, flag: bool = False):
         self.DEBUG = flag
         self.data_service.debug(self.DEBUG)
+ 
+    def receive_file(self, file, headers):
+        data = self.data_service.receive_file(file, headers)
+        if (data is None) or self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data
+ 
+ 
+    def process_MF4(self, file, headers):
+        data = self.data_service.process_MF4(file, headers)
+        if self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data
+ 
+ 
+ 
+ 
  
     def list(self, request: dict):
         data = self.data_service.list(request)

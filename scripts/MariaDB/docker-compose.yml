@@ -7,6 +7,7 @@ services:
     ports:
       - 3306:3306
     environment:
+      GF_DASHBOARDS_MIN_REFRESH_INTERVAL: 1ms 
       MYSQL_ROOT_PASSWORD: bN7kB7s5aPKJ6i
       MYSQL_DATABASE: iot_metrics_db
       MYSQL_USER: iot_metrics_user

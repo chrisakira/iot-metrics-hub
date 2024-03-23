@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, String, Integer, TEXT, TIMESTAMP, text
+from sqlalchemy import Column, String, Integer, Float, BigInteger, TEXT, TIMESTAMP, text
 
 REFERENCES = {}
 MODELS = {}
@@ -39,11 +39,20 @@ class ProductsModel:
     updated_at = Column(TIMESTAMP, nullable=True, name='updated_at')
     deleted_at = Column(TIMESTAMP, nullable=True, name='deleted_at')
     active = Column(Integer, default=1, name='active')
+    
+class MeasurementData:
+    __tablename__ = 'measurement'
+    id =            Column(Integer, primary_key=True, name='id')
+    mac_address =   Column(String(255), nullable=False, name='mac_address')
+    measurement =   Column(Integer,     nullable=False, name='measurement')
+    value =         Column(Float,       nullable=False, name='value',       default=0.0)
+    timestamp =     Column(BigInteger,  nullable=False, name='timestamp')
 
 
 REFERENCES['device'] =      DeviceModel
 REFERENCES['device_log'] =  DeviceLogModel 
 REFERENCES['products'] =    ProductsModel
+REFERENCES['measurement'] = MeasurementData
 
 
 def create(db: SQLAlchemy):
@@ -51,9 +60,14 @@ def create(db: SQLAlchemy):
         pass
     class DeviceLog(db.Model, DeviceLogModel):
         pass
+    
     class Products(db.Model, ProductsModel):
+        pass
+
+    class Measurement(db.Model, MeasurementData):
         pass
 
     MODELS['device'] = Device
     MODELS['device_log'] = DeviceLog
     MODELS['products'] = Products
+    MODELS['measurement'] = Measurement

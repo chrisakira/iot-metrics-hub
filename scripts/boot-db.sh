@@ -33,4 +33,5 @@ fi
 flask db migrate -m 'device'
 flask db migrate -m 'device_log'
 flask db migrate -m 'products'
+flask db migrate -m 'measurement'
 flask db upgrade
