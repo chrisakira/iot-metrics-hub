@@ -291,6 +291,85 @@ def get_device_v1():
 
     return response.get_response(status_code)
 
+@APP.route(API_ROOT + '/v1/device/list', methods=['GET'])
+def list_device_v1():
+    """
+    List devices route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+
+        ---
+        get:
+            summary: Get device 
+            parameters:
+            - name: name
+              in: query
+              description: "Name of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: Akira 
+            - name: mac_address
+              in: query
+              description: "Mac Address of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: 02:42:ac:11:22:33
+            responses:
+                200:
+                    description: Success response
+                    content:
+                        application/json:
+                            schema: DeviceGetResponseSchema
+                4xx:
+                    description: Record not found in the DB
+                    content:
+                        application/json:
+                            schema: DeviceGetFindErrorResponseSchema
+                4xy:
+                    description: Missing parameter in the request
+                    content:
+                        application/json:
+                            schema: DeviceGetParamErrorResponseSchema
+                5xx:
+                    description: Service fail response
+                    content:
+                        application/json:
+                            schema: InternalErrorResponseSchema
+        """
+    request = ApiRequest().parse_request(APP) 
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    LOGGER.info(f'request: {request}')
+    try:
+        data = manager.list_device(request.where) 
+        status_code = 200
+        response.set_data(data) 
+
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
 @APP.route(API_ROOT + '/v1/device', methods=['POST'])
 def create_device_v1():
     """
@@ -711,366 +790,12 @@ def log_device_v1():
 
 
 # *************
-# Table
+# Data
 # *************
-@APP.route(API_ROOT + '/v1/table', methods=['GET'])
-def check_table_v1():
-    """
-    Product create route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Product Create
-            requestBody:
-                description: 'Product to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: ProductCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: ProductCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                """
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
-    status_code = 200
-    response = ApiResponse(request)
-    response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-    
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        manager.debug(DEBUG)
-        try:
-            data = manager.check_table(request['where'])
-            response.set_data(data)
-            response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.FIND_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-    else:
-        LOGGER.error("Auth token failed")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
-        error.set_message_params()
-        status_code = 400 
-        response.set_exception(error) 
-    return response.get_response(status_code)
-
-    # return http_helper.create_response(body=body, status_code=200)
-
-@APP.route(API_ROOT + '/v1/table/list', methods=['GET'])
-def list_table_v1():
-    """
-    Product create route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Product Create
-            requestBody:
-                description: 'Product to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: ProductCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: ProductCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-            """
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
-    status_code = 200
-    response = ApiResponse(request)
-    response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-    
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        manager.debug(DEBUG)
-        try:
-            data = manager.check_table(request['where'])
-            response.set_data(data)
-            response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.FIND_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-    else:
-        LOGGER.error("Auth token failed")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
-        error.set_message_params()
-        status_code = 400 
-        response.set_exception(error) 
-    return response.get_response(status_code)
-
-    # return http_helper.create_response(body=body, status_code=200)
-
-@APP.route(API_ROOT + '/v1/table/create', methods=['POST'])
-def create_table_v1():
-    """
-    Product create route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Product Create
-            requestBody:
-                description: 'Product to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: ProductCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: ProductCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-            """
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
-    status_code = 200
-    response = ApiResponse(request)
-    response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        manager.debug(DEBUG)
-        try:
-            data = manager.create_table(request['where']) 
-            if isinstance(data, pymysql.cursors.DictCursor):
-                data = True 
-            response.set_data(data)
-            response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.CREATE_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
-    else:
-        LOGGER.error("Auth token failed")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
-        error.set_message_params()
-        status_code = 400 
-        response.set_exception(error) 
-        
-    return response.get_response(status_code)
-    
-@APP.route(API_ROOT + '/v1/table/delete', methods=['DELETE'])
-def drop_table_v1():
-    """
-    Product create route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Product Create
-            requestBody:
-                description: 'Product to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: ProductCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: ProductCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-            """  
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
-    status_code = 200
-    response = ApiResponse(request)
-    response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-        
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        manager.debug(DEBUG)
-        try:
-            data = manager.drop_table(request['where'])
-            response.set_data(data)
-            response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.DELETE_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
-    else:
-        LOGGER.error("Auth token failed")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
-        error.set_message_params()
-        status_code = 400 
-        response.set_exception(error) 
-    return response.get_response(status_code)
-
-@APP.route(API_ROOT + '/v1/table/truncate', methods=['DELETE'])
-def truncate_table_v1():
-    """
-    Product create route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Product Create
-            requestBody:
-                description: 'Product to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: ProductCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: ProductCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: ProductCreateErrorResponseSchema
-            """ 
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
-    status_code = 200
-    response = ApiResponse(request)
-    response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-        
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        manager.debug(DEBUG)
-        try:
-            data = manager.drop_table(request['where'])
-            response.set_data(data)
-            response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.DELETE_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
-    else:
-        LOGGER.error("Auth token failed")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
-        error.set_message_params()
-        status_code = 400 
-        response.set_exception(error) 
-    return response.get_response(status_code)
-
-@APP.route(API_ROOT + '/v1/table/insert', methods=['POST'])
+@APP.route(API_ROOT + '/v1/data', methods=['POST'])
 def insert_data_v1():
     """
-    Product create route
+    Insert data row in the table
 
     :return Endpoint with RESTful pattern
 
@@ -1110,13 +835,20 @@ def insert_data_v1():
     status_code = 200
     response = ApiResponse(request) 
     response.set_hateos(True)
+    if 'where' not in request:
+        LOGGER.error("Data or file field missing")
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        status_code = 400 
+        response.set_exception(error) 
+        return response.get_response(status_code)
     auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) > 5 and auth_token in tokens):
+        del request['where']['auth_token']
+        manager = DataManager(logger=LOGGER)
         manager.debug(DEBUG)
         try:
-            data = manager.process(request['where'])
+            data = manager.insert_data(request['where'])
             response.set_data(data)
             response.links = None
         except Exception as err:
@@ -1138,7 +870,7 @@ def insert_data_v1():
 
     # return http_helper.create_response(body=body, status_code=200)
 
-@APP.route(API_ROOT + '/v1/table/insert/array', methods=['POST'])
+@APP.route(API_ROOT + '/v1/data/array', methods=['POST'])
 def insert_array_v1():
     """
     Product create route
@@ -1210,7 +942,7 @@ def insert_array_v1():
 
     # return http_helper.create_response(body=body, status_code=200)
  
-@APP.route(API_ROOT + '/v1/mf4_file', methods=['POST'])
+@APP.route(API_ROOT + '/v1/data/mf4', methods=['POST'])
 def insert_mf4_file():
     """
     API endpoint for inserting data and file.
@@ -1255,8 +987,8 @@ def insert_mf4_file():
         response.set_exception(error) 
     return response.get_response(status_code)
 
-@APP.route(API_ROOT + '/v1/data/file', methods=['POST'])
-def receive_file():     
+@APP.route(API_ROOT + '/v1/data/akira', methods=['POST'])
+def insert_aki_file():     
 
     status_code = 200
     response = ApiResponse()
@@ -1284,7 +1016,6 @@ def receive_file():
     
     body = {"app": f'{APP_NAME}:{APP_VERSION}'}
     return http_helper.create_response(body=body, status_code=200)
-
  
 # *************
 # Doc
@@ -1302,15 +1033,12 @@ spec.path(view=ping_device_v1, path="/v1/device/ping", operations=get_doc(ping_d
 spec.path(view=log_device_v1, path="/v1/device/log", operations=get_doc(log_device_v1))
 
 # *************
-# Table
+# Data
 # *************
-spec.path(view=check_table_v1, path="/v1/table", operations=get_doc(check_table_v1)) 
-spec.path(view=list_table_v1, path="/v1/table/list", operations=get_doc(list_table_v1)) 
-spec.path(view=create_table_v1, path="/v1/table/create", operations=get_doc(create_table_v1)) 
-spec.path(view=drop_table_v1, path="/v1/table/delete", operations=get_doc(drop_table_v1)) 
-spec.path(view=truncate_table_v1, path="/v1/table/truncate", operations=get_doc(truncate_table_v1)) 
-spec.path(view=insert_data_v1, path="/v1/table/insert", operations=get_doc(insert_data_v1)) 
-spec.path(view=insert_array_v1, path="/v1/table/insert/array", operations=get_doc(insert_array_v1))
+spec.path(view=insert_data_v1, path="/v1/data", operations=get_doc(insert_data_v1)) 
+spec.path(view=insert_array_v1, path="/v1/data/array", operations=get_doc(insert_array_v1))
+spec.path(view=insert_mf4_file, path="/v1/data/mf4", operations=get_doc(insert_mf4_file))
+spec.path(view=insert_aki_file, path="/v1/data/aki", operations=get_doc(insert_aki_file))
 
 print_routes(APP)
 print(f'Running at {ENV}')

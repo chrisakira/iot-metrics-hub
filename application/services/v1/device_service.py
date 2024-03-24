@@ -60,6 +60,47 @@ class DeviceService:
         if self.REDIS_ENABLED:
             self.redis_device_repository.debug = self.DEBUG
 
+    def list_device(self, request: dict):
+        required_fields = ["name", "mac_address"] 
+        
+        self.logger.info('method: {} - request: {}'.format(get_function_name(), request))
+        try:
+            device_vo = DeviceVO(request)
+            if request != {}:
+                found = False 
+                for required_field in required_fields: 
+                    if required_field in device_vo.__dict__:
+                        found = True
+                        if device_vo.__dict__[required_field] == "":
+                            raise ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
+                        
+                if found == False:
+                    raise ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)  
+
+            result =  self.alchemy_device_repository.list([  "id", 
+                                                    "name",
+                                                    "mac_address",
+                                                    "description",
+                                                    "active",
+                                                    "status",
+                                                    "model",
+                                                    "firmware",
+                                                    "last_seen",
+                                                    "created_at",
+                                                    "updated_at",
+                                                    "deleted_at",
+                                                    "delete_status"],device_vo)	 
+            self.logger.info('method: {} - result: {}'.format(get_function_name(), result))
+            if self.alchemy_device_repository._exception:
+                self.exception = self.alchemy_device_repository._exception
+                raise self.exception
+
+            return result
+            
+        except Exception as e:
+            self.exception = e
+            raise e
+    
     def get_device(self, request: dict):
         required_fields = ["name", "mac_address"] 
         

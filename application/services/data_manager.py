@@ -28,9 +28,25 @@ class DataManager:
         self.DEBUG = flag
         self.data_service.debug(self.DEBUG)
  
+    def insert_data(self, request):
+        if request == {}: 
+            raise ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
+        data = self.data_service.insert_data(request)
+        if self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data
+    
     def receive_file(self, file, headers):
         data = self.data_service.receive_file(file, headers)
         if (data is None) or self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data
+ 
+    def test(self, taokei):
+        data = self.data_service.test()
+        if self.data_service.exception:
             self.exception = self.data_service.exception
             raise self.exception
         return data

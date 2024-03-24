@@ -20,12 +20,5 @@ class AbstractRepository:
     def get_exception(self):
         return self._exception
 
-    def _execute(self, query):
-        if self.debug:
-            self.logger.info("InfluxDB Query: {}".format(query))
-
-        result = self.connection.query(query)
-        return result
-
     def _close(self):
         self.connection.close()

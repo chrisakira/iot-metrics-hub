@@ -28,6 +28,26 @@ class DeviceManager:
         self.DEBUG = flag
         self.device_service.debug(self.DEBUG)
 
+    def list_device(self, request: dict):
+        try:  
+            data = self.device_service.list_device(request) # Query the database for file
+            self.logger.debug(f"Data: {data}")
+            if not data: # Could not find the record in the database
+                raise DatabaseException(MessagesEnum.FIND_ERROR) # Raise an exception
+            
+            if self.device_service.exception: # If there was an exception
+                self.exception = self.device_service.exception # Set the exception
+                raise self.exception # Raise the exception
+            
+            if(data): 
+                return data # Return the data
+            else:
+                raise DatabaseException(MessagesEnum.UNKNOWN_ERROR) # Raise an exception
+            
+        except Exception as e:
+            self.exception = e
+            raise e
+    
     def get_device(self, request: dict):
         try: 
             if request == {}: # If the request is empty

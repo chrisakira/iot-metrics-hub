@@ -8,6 +8,7 @@ from datetime import datetime
 from application import helper
 from application.database.mysql_alchemy import AlchemyConnector
 from application.database.mysql import MySQLConnector
+from application.database.influxdb import InfluxDBConnector
 from application.database.redis import RedisConnector
 from application.enums.messages import MessagesEnum
 from application.exceptions import DatabaseException, ValidationException, ServiceException
@@ -15,6 +16,7 @@ from application.filter_helper import filter_xss_injection
 from application.helper import get_function_name
 from application.logging import get_logger
 from application.repositories.v1.alchemy.data_repository import DataRepository as AlchemyDataRepository
+from application.repositories.v1.influxdb.data_repository import DataRepository as InfluxDBDataRepository
 from application.repositories.v1.mysql.data_repository import DataRepository as MysqlDataRepository
 from application.repositories.v1.redis.data_repository import DataRepository as RedisDataRepository
 from application.vos.data import DataVO
@@ -59,21 +61,26 @@ class DataService:
     DEBUG = False
     REDIS_ENABLED = False
 
-    def __init__(self, logger=None, mysql_connector=None, alchemy_session=None, redis_connector=None, data_repository=None,
-                redis_data_repository=None, alchemy_data_repository=None):
+    def __init__(self, logger=None, mysql_connector=None, influxdb_connector=None, alchemy_session=None, redis_connector=None, data_repository=None,
+                redis_data_repository=None, alchemy_data_repository=None, influxdb_data_repository=None):
         # logger
         self.logger = logger if logger is None else get_logger()
         # database connection
         self.mysql_connector = mysql_connector if mysql_connector is not None else MySQLConnector()
         
         self.alchemy_session = alchemy_session if alchemy_session is not None else AlchemyConnector()
+        
+        self.influxdb_connector = influxdb_connector if influxdb_connector is not None else InfluxDBConnector()
         # todo passar apenas connector
         # mysql repository
         self.data_repository = data_repository if data_repository is not None \
             else MysqlDataRepository(mysql_connection=self.mysql_connector.get_connection())
-
+        
         self.alchemy_data_repository = alchemy_data_repository if alchemy_data_repository is not None \
             else AlchemyDataRepository(alchemy_session=self.alchemy_session.get_session(self.alchemy_session.get_engine()))
+
+        self.influxdb_data_repository = influxdb_data_repository if influxdb_data_repository is not None \
+            else InfluxDBDataRepository(influxdb_connector=self.influxdb_connector.get_connection())
 
         # exception
         self.exception = None
@@ -94,7 +101,19 @@ class DataService:
         if self.REDIS_ENABLED:
             self.redis_data_repository.debug = self.DEBUG
             
-    def receive_file(self, file, headers): 
+    def insert_data(self, request): 
+        self.logger.info('request: {}', request)
+        # self.influxdb_data_repository.insert()
+        
+        return True
+    
+    def test(self): 
+        self.influxdb_data_repository.insert()
+        
+        return True
+    
+       
+    def receive_file(self, file, headers):  
         if file == b'':
             raise ValidationException(MessagesEnum.REQUEST_ERROR)
         data = DataVO()
@@ -113,7 +132,8 @@ class DataService:
             # data.measurement = bin_data[2]
             # self.alchemy_data_repository.create(data) 
         return True
-    
+
+
     def process_MF4(self, file, headers):
         file = BytesIO(file.read())
         mdf = MDF(file)      

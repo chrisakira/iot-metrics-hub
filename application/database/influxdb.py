@@ -19,20 +19,6 @@ def reset():
     _CONNECTION = False
 
 
-def get_uri(config: Configuration = None):
-    if config is None:
-        config = get_config()
-    DB_HOST = 'localhost'
-    if config.get('RUNNING_IN_CONTAINER'):
-        DB_HOST = config.get('INFLUXDB_HOST')
-    uri = 'http://{}:{}/{}'.format(
-        DB_HOST,
-        config.get('INFLUXDB_PORT'),
-        config.get('INFLUXDB_DATABASE'))
-
-    return uri
-
-
 class InfluxDBConnector:
     def __init__(self, config=None, logger=None):
         # logger
@@ -91,3 +77,14 @@ class InfluxDBConnector:
             connection = _CONNECTION
 
         return connection
+
+    def get_status(self, connector=None):
+        if connector is None:
+            connector = self.get_connection()
+        try:
+            connector.ping()
+            return True
+        except Exception as err:
+            self.logger.error(err)
+            return False
+        

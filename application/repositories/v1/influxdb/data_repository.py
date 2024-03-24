@@ -5,54 +5,43 @@ Version: 1.0.0
 from datetime import datetime  
 from application.config import get_config
 from application.vos.data import DataVO
-from application.repositories.v1.mysql import AbstractRepository
+from application.repositories.v1.influxdb import AbstractRepository
 from application.request_control import Order, Pagination, PaginationType
+import random
+import time
 
 config = get_config()
 class DataRepository(AbstractRepository):
-    BASE_TABLE = 'data'
-    BASE_SCHEMA = config.get("DB")
-    BASE_TABLE_ALIAS = 'd'
-    PK = 'id'
-    UUID_KEY = 'uuid'
 
-    def __init__(self, logger=None, mysql_connection=None):
-        super().__init__(logger, mysql_connection)
+    def __init__(self, logger=None, influxdb_connector=None):
+        super().__init__(logger, influxdb_connector)
 
-    def create(self, data: DataVO):
-
-        keys = list(data.keys())
-        # remove the PK
-        keys.remove(self.PK)
-        keys_str = ",".join(keys)
-        values_count = len(data.values()) - 1
-        values_str = ",".join(['%s' for i in range(0, values_count)])
-
-        # query
-        sql = "INSERT INTO {} ({}) VALUES ({})".format(self.BASE_TABLE, keys_str, values_str)
-
-        # last treatments
-        data_dict = data.to_dict()
-        del data_dict[self.PK]
-        values = tuple(data_dict.values())
-
+    def insert(self):
+        timestamp = int(datetime.now().timestamp() * 1000)
+        data = []
+        data.append("{measurement},location={location},fruit={fruit},id={id} x={x},y={y},z={z}i {timestamp}"
+                .format(measurement="M1",
+                    location=round(random.random(),4),
+                    fruit=round(random.random(),4),
+                    id=round(random.random(),4),
+                    x=round(random.random(),4),
+                    y=round(random.random(),4),
+                    z=random.randint(0,50),
+                    timestamp=timestamp))
         # try to create
         try:
-            created = self._execute(sql, values)
-            # get last inserted id
-            data.id = self.connection.insert_id()
-            # commit
-            self.connection.commit()
+            client_write_start_time = time.perf_counter()
 
+            self.connection.write_points(data, database=config.get('DB'), time_precision='ms', batch_size=1, protocol='line')
+
+            client_write_end_time = time.perf_counter()
+
+            self.logger.debug("Client Library Write: {time}s".format(time=client_write_end_time - client_write_start_time))
         except Exception as err:
             self.logger.error(err)
-            self.connection.rollback()
             self._exception = err
-            created = False
-        finally:
-            self._close()
-
-        return created
+            
+        return True
 
     def update(self, data: DataVO, value, key=None):
         key_type = '%s'

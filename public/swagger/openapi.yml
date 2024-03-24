@@ -273,7 +273,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductSoftDeleteErrorResponse'
-  /v1/table:
+  /v1/data:
     post:
       summary: Product Create
       requestBody:
@@ -302,7 +302,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/list:
+  /v1/data/array:
     post:
       summary: Product Create
       requestBody:
@@ -331,151 +331,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/create:
-    post:
-      summary: Product Create
-      requestBody:
-        description: Product to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/delete:
-    post:
-      summary: Product Create
-      requestBody:
-        description: Product to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/truncate:
-    post:
-      summary: Product Create
-      requestBody:
-        description: Product to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/insert:
-    post:
-      summary: Product Create
-      requestBody:
-        description: Product to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-  /v1/table/insert/array:
-    post:
-      summary: Product Create
-      requestBody:
-        description: Product to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductCreateRequest'
-      responses:
-        '200':
-          description: Success response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateResponse'
-        4xx:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
-        5xx:
-          description: Service fail response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductCreateErrorResponse'
+  /v1/data/mf4: {}
+  /v1/data/aki: {}
 info:
   title: iot-metrics-hub
   version: 0.0.1

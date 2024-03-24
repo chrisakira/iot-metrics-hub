@@ -6,6 +6,7 @@ import os
 import requests
 from boot import get_environment
 from application.aws.sqs import SQS
+from application.database.influxdb import InfluxDBConnector
 from application.database.mysql import MySQLConnector
 from application.database.redis import RedisConnector
 from application.database.postgre import PostgreSQLConnector
@@ -114,6 +115,32 @@ class AlchemyMysqlConnectionHealthCheck(AbstractHealthCheck):
                 description = "Connection successful"
             else:
                 raise Exception("AlchemyConnector is None")
+        except Exception as err:
+            self.logger.error(err)
+
+        if result:
+            check_result = HealthCheckResult.healthy(description)
+        return check_result
+
+
+
+class InfluxDBConnectionHealthCheck(AbstractHealthCheck):
+    def __init__(self, logger=None, config=None, influx_connector=None):
+        super().__init__(logger=logger, config=config)
+        # database connection
+        self.influx_connector = influx_connector if influx_connector is not None else InfluxDBConnector()
+
+    def check_health(self):
+        result = False
+        description = "Unable to connect"
+        check_result = HealthCheckResult.unhealthy(description)
+
+        try:
+            if self.influx_connector:
+                result = self.influx_connector.get_status()  
+                description = "Connection successful"
+            else:
+                raise Exception("InfluxDB is None")
         except Exception as err:
             self.logger.error(err)
 

@@ -9,12 +9,7 @@ from application.repositories.v1.mysql import AbstractRepository
 from application.request_control import Order, Pagination, PaginationType
 
 config = get_config()
-class DataRepository(AbstractRepository):
-    BASE_TABLE = 'data'
-    BASE_SCHEMA = config.get("DB")
-    BASE_TABLE_ALIAS = 'd'
-    PK = 'id'
-    UUID_KEY = 'uuid'
+class DataRepository(AbstractRepository): 
 
     def __init__(self, logger=None, mysql_connection=None):
         super().__init__(logger, mysql_connection)
