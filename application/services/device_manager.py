@@ -39,7 +39,7 @@ class DeviceManager:
                 self.exception = self.device_service.exception # Set the exception
                 raise self.exception # Raise the exception
             
-            if(data): 
+            if(data):  
                 return data # Return the data
             else:
                 raise DatabaseException(MessagesEnum.UNKNOWN_ERROR) # Raise an exception
