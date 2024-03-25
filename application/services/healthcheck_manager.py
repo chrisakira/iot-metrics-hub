@@ -32,11 +32,11 @@ class HealthCheckManager:
     def check(self):
         self.healthcheck_service.add_check("self", SelfConnectionHealthCheck(  self.logger, self.config), [])
         self.healthcheck_service.add_check("mysql", MysqlConnectionHealthCheck(self.logger, self.config), ["maria_db"])
-        self.healthcheck_service.add_check("postgre", PostgreConnectionHealthCheck(self.logger, self.config), ["postgres_db"])
+        # self.healthcheck_service.add_check("postgre", PostgreConnectionHealthCheck(self.logger, self.config), ["postgres_db"])
         self.healthcheck_service.add_check("redis", RedisConnectionHealthCheck(self.logger, self.config), ["redis"])
         self.healthcheck_service.add_check("mysql_alchemy", AlchemyMysqlConnectionHealthCheck(self.logger, self.config), ["alchemy"])
         self.healthcheck_service.add_check("influxdb", InfluxDBConnectionHealthCheck(self.logger, self.config), ["influxdb"])
-        self.healthcheck_service.add_check("internal", lambda: HealthCheckResult.healthy("connect"), ["example"])
+        self.healthcheck_service.add_check("internal", lambda: HealthCheckResult.healthy("connect"), ["Internal API"])
         # example with a lambda check
         # self.healthcheck_service.add_check("internal", lambda: HealthCheckResult.unhealthy("connect"), ["example"])
 
