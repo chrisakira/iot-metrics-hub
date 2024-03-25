@@ -38,7 +38,6 @@ class FlaskRequestParser:
     def parse(self, request=None):
         if not helper.empty(request):
             self._request = request
-
         request = self._request
         # Query string
         self.query_string = str(request.query_string.decode('ascii'))
@@ -108,7 +107,8 @@ class FlaskRequestParser:
                         else:
                             wlist.append(value)
                         self.where[key] = wlist
-
+        if not request.data:
+            return self
         if request.method in ['POST', 'PUT', 'PATCH']:
             # json
             if request.json is not None:
@@ -120,6 +120,8 @@ class FlaskRequestParser:
                     self.where = {}
             # form-urlenconded or other
             else:
+                
+                print("Batata")
                 request_form = request.form
                 if helper.empty(request_form):
                     if not helper.empty(request.data):

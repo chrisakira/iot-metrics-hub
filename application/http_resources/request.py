@@ -87,9 +87,9 @@ class ApiRequest:
         """
         :param (chalice.app.Chalice) app:
         :return:
-        """
-        request_parser = FlaskRequestParser()
-        parsed_request = request_parser.parse(request)
+        """ 
+        request_parser = FlaskRequestParser()  
+        parsed_request = request_parser.parse(request) 
 
         self.fields = parsed_request.fields
         self.limit = parsed_request.limit

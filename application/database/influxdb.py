@@ -11,7 +11,7 @@ from application.logging import get_logger
 
 _CONNECTION = False
 _RETRY_COUNT = 0
-_MAX_RETRY_ATTEMPTS = 3
+_MAX_RETRY_ATTEMPTS = 1
 
 
 def reset():
@@ -46,14 +46,16 @@ class InfluxDBConnector:
                                             port=params['port'],
                                             username=params['username'],
                                             password=params['password'],
-                                            database=params['database'])
-                if connect:
+                                            database=params['database'],
+                                            timeout=1)  # Adiciona o timeout de 2 segundos
+
+                if connection != None:
                     connection.ping()
                 _CONNECTION = connection
                 _RETRY_COUNT = 0
                 self.logger.info('Connected')
             except Exception as err:
-                if _RETRY_COUNT == _MAX_RETRY_ATTEMPTS:
+                if _RETRY_COUNT >= _MAX_RETRY_ATTEMPTS:
                     _RETRY_COUNT = 0
                     self.logger.error(err)
                     connection = None

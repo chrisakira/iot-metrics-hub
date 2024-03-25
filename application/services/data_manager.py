@@ -5,6 +5,7 @@ Version: 1.0.0
 from application.config import get_config
 from application.logging import get_logger
 from application.services.v1.data_service import DataService
+from application.services.v1.device_service import DeviceService
 from application.enums.messages import MessagesEnum
 from application.exceptions import DatabaseException, ValidationException 
 
@@ -28,10 +29,31 @@ class DataManager:
         self.DEBUG = flag
         self.data_service.debug(self.DEBUG)
  
-    def insert_data(self, request):
-        if request == {}: 
-            raise ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
+    def insert_data(self, request: dict):   
+        device_service = DeviceService(self.logger)
+        result = device_service.get_device({'mac_address': request['meta_data']['mac_address']})
+        if result is None:
+            error = DatabaseException(MessagesEnum.FIND_ERROR)
+            error.params = 'Device not found' 
+            self.exception = error
+            raise self.exception
+        
         data = self.data_service.insert_data(request)
+        if self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data
+    
+    def insert_array(self, request: dict):   
+        device_service = DeviceService(self.logger)
+        result = device_service.get_device({'mac_address': request['meta_data']['mac_address']})
+        if result is None:
+            error = DatabaseException(MessagesEnum.FIND_ERROR)
+            error.params = 'Device not found' 
+            self.exception = error
+            raise self.exception
+         
+        data = self.data_service.insert_array(request)
         if self.data_service.exception:
             self.exception = self.data_service.exception
             raise self.exception
@@ -42,18 +64,18 @@ class DataManager:
         if (data is None) or self.data_service.exception:
             self.exception = self.data_service.exception
             raise self.exception
-        return data
+        return data 
  
-    def test(self, taokei):
-        data = self.data_service.test()
-        if self.data_service.exception:
-            self.exception = self.data_service.exception
+    def process_MF4(self, file, request):
+        device_service = DeviceService(self.logger)
+        result = device_service.get_device({'mac_address': request['mac_address']})
+        if result is None:
+            error = DatabaseException(MessagesEnum.FIND_ERROR)
+            error.params = 'Device not found' 
+            self.exception = error
             raise self.exception
-        return data
- 
- 
-    def process_MF4(self, file, headers):
-        data = self.data_service.process_MF4(file, headers)
+        
+        data = self.data_service.process_MF4(file, request)
         if self.data_service.exception:
             self.exception = self.data_service.exception
             raise self.exception

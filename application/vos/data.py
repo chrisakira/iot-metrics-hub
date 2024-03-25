@@ -71,9 +71,9 @@ class DataVO(AbstractVO):
         group = 0
         for channel in mdf.iter_channels(False):
             if channel.group_index == group:
-                setattr(self, f"`timestamp_CG_{channel.group_index}`", "BIGINT")
+                setattr(self, f"timestamp_CG_{channel.group_index}", "BIGINT")
                 group += 1
-            setattr(self, f"`{channel.name.replace(';', '')}_CG_{channel.group_index}`", "INT")
+            setattr(self, f"{channel.name.replace(';', '')}_CG_{channel.group_index}", "INT")
         
         if debug:
             atributos = vars(self)  # Obtém todos os atributos da instância
@@ -97,9 +97,9 @@ class DataVO(AbstractVO):
                 for timestamp in timestamps_: 
                     new_timestamps.append(int(timestamp*1000 + mdf.start_time.timestamp()*1000))
     
-                setattr(self, f"`timestamp_CG_{channel.group_index}`", new_timestamps)
+                setattr(self, f"timestamp_CG_{channel.group_index}", new_timestamps)
                 group += 1
-            setattr(self, f"`{channel.name.replace(';', '')}_CG_{channel.group_index}`", channel.samples.tolist())
+            setattr(self, f"{channel.name.replace(';', '')}_CG_{channel.group_index}", channel.samples.tolist())
         if debug:
             for name, value in vars(self).items():
                 print(f"Nome da variável: {name}, Valor da variável: {value}")

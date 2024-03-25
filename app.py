@@ -6,6 +6,7 @@ import base64
 import os
 import pymysql
 import boot
+from application.auxiliars.auxiliars import check_basic_data_fields
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from application import APP_NAME, APP_VERSION, http_helper
@@ -829,46 +830,39 @@ def insert_data_v1():
                         application/json:
                             schema: ProductCreateErrorResponseSchema
             """   
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
+     
+    request = ApiRequest().parse_request(APP) 
+    fields_check = check_basic_data_fields(request)
+    if fields_check != True:
+        return http_helper.create_response(body=fields_check.to_dict(), status_code=400)
+    
     status_code = 200
     response = ApiResponse(request) 
     response.set_hateos(True)
-    if 'where' not in request:
-        LOGGER.error("Data or file field missing")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        status_code = 400 
-        response.set_exception(error) 
-        return response.get_response(status_code)
     auth_token = str(request['where']['auth_token'])
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) > 5 and auth_token in tokens):
         del request['where']['auth_token']
+        LOGGER.info(f"""request: {request['where']}""")
         manager = DataManager(logger=LOGGER)
         manager.debug(DEBUG)
-        try:
+        try: 
             data = manager.insert_data(request['where'])
+            if manager.exception:
+                raise manager.exception 
             response.set_data(data)
             response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.LIST_ERROR)
+        except Exception as err: 
             status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
+            response.set_exception(err)
+            return response.get_response(status_code)
     else:
-        LOGGER.error("Auth token failed")
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = str(request['where']['auth_token']),"auth_token"
         error.set_message_params()
         status_code = 400 
         response.set_exception(error) 
     return response.get_response(status_code)
-
-    # return http_helper.create_response(body=body, status_code=200)
 
 @APP.route(API_ROOT + '/v1/data/array', methods=['POST'])
 def insert_array_v1():
@@ -907,32 +901,33 @@ def insert_array_v1():
                         application/json:
                             schema: ProductCreateErrorResponseSchema
             """   
-    request = ApiRequest().parse_request(APP)
-    LOGGER.info(f'request: {request}')
-
+     
+    request = ApiRequest().parse_request(APP) 
+    fields_check = check_basic_data_fields(request)
+    if fields_check != True:
+        return http_helper.create_response(body=fields_check.to_dict(), status_code=400)
+    
     status_code = 200
     response = ApiResponse(request) 
     response.set_hateos(True)
     auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
-        manager = BaseManager(logger=LOGGER, base_service=BaseService(logger=LOGGER))
-        
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) > 5 and auth_token in tokens):
+        del request['where']['auth_token']
+        LOGGER.info(f"""request: {request['where']}""")
+        manager = DataManager(logger=LOGGER)
         manager.debug(DEBUG)
-        try:
-            data = manager.process_array(request['where'])
+        try:  
+            data = manager.insert_array(request['where'])
+            if manager.exception:
+                raise manager.exception 
             response.set_data(data)
             response.links = None
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.LIST_ERROR)
+        except Exception as err: 
             status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
+            response.set_exception(err)
+            return response.get_response(status_code)
     else:
-        LOGGER.error("Auth token failed")
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = str(request['where']['auth_token']),"auth_token"
         error.set_message_params()
@@ -940,8 +935,6 @@ def insert_array_v1():
         response.set_exception(error) 
     return response.get_response(status_code)
 
-    # return http_helper.create_response(body=body, status_code=200)
- 
 @APP.route(API_ROOT + '/v1/data/mf4', methods=['POST'])
 def insert_mf4_file():
     """
@@ -957,15 +950,14 @@ def insert_mf4_file():
         data = json.loads(data)
     else:
         LOGGER.error("Data or file field missing")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = "Potato", "potato"
-        error.set_message_params()
+        error = ApiException(MessagesEnum.VALIDATION_ERROR) 
         status_code = 400 
         response.set_exception(error) 
         return response.get_response(status_code)
     auth_token = str(data['auth_token']) 
-    tokens = str(os.getenv('auths'))
-    if(len(auth_token) == 27 and auth_token in tokens):
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) >= 5 and auth_token in tokens):
+        del data['auth_token']
         manager = DataManager(logger=LOGGER) 
         manager.debug(DEBUG)
         try:  

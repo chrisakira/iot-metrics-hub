@@ -7,6 +7,8 @@ from application.config import get_config
 from application.vos.data import DataVO
 from application.repositories.v1.influxdb import AbstractRepository
 from application.request_control import Order, Pagination, PaginationType
+from application.enums.messages import MessagesEnum
+from application.exceptions import DatabaseException, ValidationException, ServiceException
 import random
 import time
 
@@ -16,226 +18,106 @@ class DataRepository(AbstractRepository):
     def __init__(self, logger=None, influxdb_connector=None):
         super().__init__(logger, influxdb_connector)
 
-    def insert(self):
-        timestamp = int(datetime.now().timestamp() * 1000)
-        data = []
-        data.append("{measurement},location={location},fruit={fruit},id={id} x={x},y={y},z={z}i {timestamp}"
-                .format(measurement="M1",
-                    location=round(random.random(),4),
-                    fruit=round(random.random(),4),
-                    id=round(random.random(),4),
-                    x=round(random.random(),4),
-                    y=round(random.random(),4),
-                    z=random.randint(0,50),
-                    timestamp=timestamp))
-        # try to create
-        try:
-            client_write_start_time = time.perf_counter()
-
-            self.connection.write_points(data, database=config.get('DB'), time_precision='ms', batch_size=1, protocol='line')
-
-            client_write_end_time = time.perf_counter()
-
-            self.logger.debug("Client Library Write: {time}s".format(time=client_write_end_time - client_write_start_time))
+    def insert(self, data: DataVO, metadata: DataVO):
+        self.logger.info(f"DB connector : {self.connection}")
+        if "timestamp" not in data:
+            self.logger.debug("Timestamp not found in data, adding current timestamp")
+            data.timestamp = int(datetime.now().timestamp() * 1000)
+        timestamp = data.timestamp
+        del data.timestamp
+        str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
+        insert_data = [str_data]
+ 
+        try: 
+            if self.connection is None:
+                self.logger.error("Connection not found")
+                error = DatabaseException(MessagesEnum.DATABASE_CONNECTION_ERROR)
+                error.params = 'Connection not found'
+                self._exception = error
+                raise self._exception
+            self.connection.write_points(insert_data, time_precision='ms', batch_size=len(insert_data), protocol='line') 
         except Exception as err:
             self.logger.error(err)
             self._exception = err
-            
+            raise self._exception 
         return True
 
-    def update(self, data: DataVO, value, key=None):
-        key_type = '%s'
-        if key is None:
-            key = self.PK
-
-        keys = list(data.keys())
-        # remove the PK
-        keys.remove(self.PK)
-        # remove the uuid
-        keys.remove(self.UUID_KEY)
-        # values
-        values = []
-        update_data = []
-        for k, v in data.to_dict().items():
-            if k in keys:
-                update_data.append('{}.{}=%s '.format(self.BASE_TABLE_ALIAS, k))
-                values.append(v)
-        update_str = ",".join(update_data)
-        # query
-        sql = "UPDATE {} as {} SET {} WHERE {}.{} = {}".format(self.BASE_TABLE, self.BASE_TABLE_ALIAS, update_str,
-                                                               self.BASE_TABLE_ALIAS, key,
-                                                               key_type)
-
-        # last treatments
-        data_dict = data.to_dict()
-        del data_dict[self.PK]
-        del data_dict[self.UUID_KEY]
-        # the uuid key
-        values.append(value)
-
-        try:
-            updated = self._execute(sql, values)
-            # commit
-            self.connection.commit()
-
-        except Exception as err:
-            self.logger.error(err)
-            self.connection.rollback()
-            self._exception = err
-            updated = False
-        finally:
-            self._close()
-
-        return updated
-
-    def get(self, value, key=None, where: dict = None, fields: list = None):
-        key_type = '%s'
-        if key is None:
-            key = self.PK
-
-        if where is None:
-            where = dict()
-
-        if fields is None or len(fields) == 0:
-            fields = '*'
-        else:
-            fields = [self.BASE_TABLE_ALIAS + '.' + v for v in fields]
-            fields = ",".join(fields)
-
-        sql = "SELECT {} FROM {} as {} WHERE {} = {}".format(fields, self.BASE_TABLE, self.BASE_TABLE_ALIAS, key,
-                                                             key_type)
-
-        if where != dict():
-            where_str = self.build_where(where)
-            sql = sql + " WHERE {}".format(where_str)
-
-        try:
-            result = self._execute(sql, value)
-
-            item = result.fetchone()
-        except Exception as err:
-            self.logger.error(err)
-            item = None
-        finally:
-            self._close()
-
-        return item
-
-    def list(self, where: dict, offset=None, limit=None, fields: list = None, sort_by=None, order_by=None):
-
-        if fields is None or len(fields) == 0:
-            fields = '*'
-        else:
-            fields = [self.BASE_TABLE_ALIAS + '.' + v for v in fields]
-            fields = ",".join(fields)
-
-        if order_by is None:
-            order_by = Order.ASC
-
-        if sort_by is None:
-            sort_by = self.PK
-        elif isinstance(sort_by, list):
-            sort_by_arr = []
-            for v in sort_by:
-                sort_by_arr.append(self.BASE_TABLE_ALIAS + '.' + v)
-            sort_by = ",".join(sort_by_arr)
-        else:
-            sort_by = self.BASE_TABLE_ALIAS + '.' + sort_by
-
-        sql = "SELECT {} FROM {} as {}".format(fields, self.BASE_TABLE, self.BASE_TABLE_ALIAS)
-
-        if where != dict():
-            where_str = self.build_where(where)
-            sql = sql + " WHERE {}".format(where_str)
-
-        sql = sql + " ORDER BY {} {}".format(sort_by, order_by)
-
-        if not offset:
-            offset = Pagination.validate(PaginationType.OFFSET, offset)
-
-        if not limit:
-            limit = Pagination.validate(PaginationType.LIMIT, limit)
-
-        sql = sql + " LIMIT {},{}".format(offset, limit)
-
-        try:
-            result = self._execute(sql)
-            result = result.fetchall()
+    def insert_array(self, data_array, metadata: DataVO):
+        new_timestamp = int(datetime.now().timestamp() * 1000)
+        insert_data = []
+        for data in data_array:
+            if "timestamp" not in data:
+                self.logger.debug("Timestamp not found in data, adding current timestamp")
+                new_timestamp += 1
+                data.timestamp = new_timestamp
+            timestamp = data.timestamp
+            del data.timestamp
+            str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
+            insert_data.append(str_data)
+ 
+        try: 
+            if self.connection is None:
+                self.logger.error("Connection not found")
+                error = DatabaseException(MessagesEnum.DATABASE_CONNECTION_ERROR)
+                error.params = 'Connection not found'
+                self._exception = error
+                raise self._exception
+            self.connection.write_points(insert_data, time_precision='ms', batch_size=len(insert_data), protocol='line') 
         except Exception as err:
             self.logger.error(err)
             self._exception = err
-            result = None
-        finally:
-            self._close()
+            raise self._exception 
+        return True
 
-        return result
-
-    def build_where(self, where):
-        where_list = []
-        for k, v in where.items():
-            if v is None:
-                where_value = '{} IS NULL'.format(self.BASE_TABLE_ALIAS + "." + k)
-            else:
-                where_value = '{} = {}'.format(self.BASE_TABLE_ALIAS + "." + k,
-                                               '"{}"'.format(v) if isinstance(v, str) else v)
-            where_list.append(where_value)
-        where_str = " AND ".join(where_list)
-        return where_str
-
-    def count(self, where: dict, sort_by=None, order_by=None):
-        if order_by is None:
-            order_by = Order.ASC
-
-        if sort_by is None:
-            sort_by = self.PK
-        elif isinstance(sort_by, list):
-            sort_by_arr = []
-            for v in sort_by:
-                sort_by_arr.append(self.BASE_TABLE_ALIAS + '.' + v)
-            sort_by = ",".join(sort_by_arr)
-        else:
-            sort_by = self.BASE_TABLE_ALIAS + '.' + sort_by
-
-        sql = "SELECT COUNT(1) as total FROM {} as {}".format(self.BASE_TABLE, self.BASE_TABLE_ALIAS)
-
-        if where != dict():
-            where_str = self.build_where(where)
-            sql = sql + " WHERE {}".format(where_str)
-
-        sql = sql + " ORDER BY {} {}".format(sort_by, order_by)
-
-        try:
-            result = self._execute(sql)
-            result = result.fetchone()
-            result = result['total']
+    def insert_mf4(self, data: DataVO, metadata: DataVO):
+        self.logger.info(f"DB connector : {self.connection}")
+        if "timestamp_CG_0" not in data:
+            self.logger.debug("Timestamp not found in data, adding current timestamp")
+            error = DatabaseException(MessagesEnum.VALIDATION_ERROR)
+            error.params = 'Timestamp not found in data'
+            self._exception = error
+            raise self._exception
+        timestamp = data.timestamp_CG_0 
+        str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
+        insert_data = [str_data]
+ 
+        try: 
+            if self.connection is None:
+                self.logger.error("Connection not found")
+                error = DatabaseException(MessagesEnum.DATABASE_CONNECTION_ERROR)
+                error.params = 'Connection not found'
+                self._exception = error
+                raise self._exception
+            self.connection.write_points(insert_data, time_precision='ms', batch_size=len(insert_data), protocol='line') 
         except Exception as err:
             self.logger.error(err)
             self._exception = err
-            result = 0
-        finally:
-            self._close()
-
-        return result
-
-    def soft_delete(self, value, key=None):
-        key_type = '%s'
-        if key is None:
-            key = self.PK
-
-        sql = "UPDATE {}.{} SET deleted_at = %s WHERE {} = {}" \
-            .format(self.BASE_SCHEMA, self.BASE_TABLE, key, key_type)
-
-        data = (datetime.today(), value,)
-        try:
-            result = self._execute(sql, data)
-            self.connection.commit()
+            raise self._exception 
+        return True
+ 
+    def insert_array_mf4(self, data_array, metadata: DataVO): 
+        insert_data = []
+        for data in data_array:
+            if "timestamp_CG_0" not in data:
+                self.logger.debug("Timestamp not found in data, adding current timestamp")
+                error = DatabaseException(MessagesEnum.VALIDATION_ERROR)
+                error.params = 'Timestamp not found in data'
+                self._exception = error
+                raise self._exception
+            timestamp = data.timestamp_CG_0 
+            str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
+            insert_data.append(str_data)
+ 
+        try: 
+            if self.connection is None:
+                self.logger.error("Connection not found")
+                error = DatabaseException(MessagesEnum.DATABASE_CONNECTION_ERROR)
+                error.params = 'Connection not found'
+                self._exception = error
+                raise self._exception
+            self.connection.write_points(insert_data, time_precision='ms', batch_size=len(insert_data), protocol='line') 
         except Exception as err:
-            self.logger.error("SQL: {} ".format(sql))
-            self.logger.error("Params: {} ".format(data))
             self.logger.error(err)
-            result = None
-            self.connection.rollback()
-        finally:
-            self._close()
-
-        return result
+            self._exception = err
+            raise self._exception 
+        return True

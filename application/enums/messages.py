@@ -57,6 +57,6 @@ class MessagesEnum(IntEnum):
     EVENT_ALREADY_REGISTERED_ERROR = 104, 'common.error.event_already_registered_error', 'Event already registered'
     EVENT_TYPE_UNKNOWN_ERROR = 105, 'common.error.event_type_unknown_error', 'Event type unknown: (%s)'
 
-    # Others 201 - 300
-    MAPPING_ERROR = 201, 'common.error.mapping_error', 'Unable to mapping the data'
+    # DataBase Exceptions 201 - 300
+    DATABASE_CONNECTION_ERROR = 201, 'common.error.data_base_not_connected', 'Unable to reach the database'
     UNMAPPING_ERROR = 202, 'common.error.unmapping_error', 'Unable to unmapping the data'

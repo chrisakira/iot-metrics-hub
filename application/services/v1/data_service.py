@@ -25,6 +25,7 @@ from asammdf import MDF
 import pytz
 import struct
 import io
+import ast
 
 def read_binary_file(file):
     data = []
@@ -100,15 +101,49 @@ class DataService:
         self.data_repository.debug = self.DEBUG
         if self.REDIS_ENABLED:
             self.redis_data_repository.debug = self.DEBUG
-            
-    def insert_data(self, request): 
-        self.logger.info('request: {}', request)
-        # self.influxdb_data_repository.insert()
+                
+    def insert_data(self, request):  
+        metadata = DataVO(request["meta_data"])
+        data = DataVO(request["data"])  
+        self.logger.info('metadata: {}'.format(metadata))
+        self.logger.info('data: {}'.format(data))
+        self.influxdb_data_repository.insert(data, metadata)
+        if self.influxdb_data_repository._exception:
+            self.exception = self.influxdb_data_repository._exception
+            raise self.exception
         
-        return True
+        return True     
     
-    def test(self): 
-        self.influxdb_data_repository.insert()
+    def insert_array(self, request):  
+        metadata = DataVO(request["meta_data"])
+        data = DataVO(request["data"])  
+        self.logger.info('metadata: {}'.format(metadata))
+        self.logger.info('data: {}'.format(data))
+
+        tmp_array = []
+
+        for key, value in data.to_dict().items():
+            values_list = ast.literal_eval(value)  # Convertendo a string JSON para lista
+            for i, single_value in enumerate(values_list):
+                if len(tmp_array) <= i:  # Se ainda não existe um dicionário para este índice
+                    tmp_array.append({})  # Criar um novo dicionário
+                tmp_array[i][key] = single_value   
+        if len(tmp_array) == 0:
+            error = ValidationException(MessagesEnum.REQUEST_ERROR)
+            error.params = 'Data not found'
+            self.exception = error
+            raise self.exception
+        data_array = []
+        for tmp in tmp_array:
+            data_array.append(DataVO(tmp)) 
+        if len(tmp_array) == 1:
+            self.influxdb_data_repository.insert(data, metadata)
+        else:
+            self.influxdb_data_repository.insert_array(data_array, metadata)
+        
+        if self.influxdb_data_repository._exception:
+            self.exception = self.influxdb_data_repository._exception
+            raise self.exception
         
         return True
     
@@ -134,29 +169,39 @@ class DataService:
         return True
 
 
-    def process_MF4(self, file, headers):
+    def process_MF4(self, file, request): 
         file = BytesIO(file.read())
-        mdf = MDF(file)      
-        result = self.alchemy_data_repository.check_table(headers)
-        if (result): 
-            base_vo = DataVO().MF4_Loader_Data(mdf) 
-            data = self.base_service.create_array(headers, base_vo)
-            if (data):
-                return 200
-            else:
-                raise 424
-        else: 
-            base_vo_ = DataVO().MF4_Loader_Types(mdf) 
-            result_ = self.base_service.create_table(headers, base_vo_)
-            if (result_): 
-                base_vo = DataVO().MF4_Loader_Data(mdf) 
-                data = self.base_service.create_array(headers, base_vo)
-                if (data):
-                    return 200
-                else:
-                    raise 424
-            else:
-                raise 424
+        mdf = MDF(file)        
+        data = DataVO().MF4_Loader_Data(mdf) 
+        metadata = DataVO(request) 
+        tmp_array = [] 
+
+        for key, value in data.to_dict().items():
+            values_list = (value)  # Convertendo a string JSON para lista
+            for i, single_value in enumerate(values_list):
+                if len(tmp_array) <= i:  # Se ainda não existe um dicionário para este índice
+                    tmp_array.append({})  # Criar um novo dicionário
+                tmp_array[i][key] = single_value
+        
+        if len(tmp_array) == 0:
+            error = ValidationException(MessagesEnum.REQUEST_ERROR)
+            error.params = 'Data not found'
+            self.exception = error
+            raise self.exception
+        
+        data_array = []
+        for tmp in tmp_array:
+            data_array.append(DataVO(tmp)) 
+             
+        if len(tmp_array) == 1:
+            self.influxdb_data_repository.insert_mf4(data, metadata)
+        else:
+            self.influxdb_data_repository.insert_array_mf4(data_array, metadata)
+         
+        
+        data_array = []  
+        return True
+        
 ################## Default operations ##################
     def list(self, request: dict):
         self.logger.info('method: {} - request: {}'
