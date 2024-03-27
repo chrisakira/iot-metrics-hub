@@ -27,12 +27,12 @@ from application.openapi import api_schemas
 from application.openapi import spec, get_doc, generate_openapi_yml
 from application.services.healthcheck_manager import HealthCheckManager
 from application.services.product_manager import ProductManager
+from application.services.file_manager import FileManager
 from application.services.data_manager import DataManager
 from application.services.device_manager import DeviceManager
 from application.migrations import models
 from flask   import request
 from io import BytesIO
-from asammdf import MDF
 import json 
 import requests
 
@@ -773,6 +773,463 @@ def log_device_v1():
     manager.debug(DEBUG)
     try:
         data = manager.log_device(request.where)  
+        status_code = 200
+        response.set_data(data)  
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
+
+# *************
+# File
+# *************
+@APP.rotute(API_ROOT + '/v1/file', methods=['GET'])
+def get_file():
+    """
+    Get device route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+
+        ---
+        get:
+            summary: Get device 
+            parameters:
+            - name: name
+              in: query
+              description: "Name of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: Akira 
+            - name: mac_address
+              in: query
+              description: "Mac Address of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: 02:42:ac:11:22:33
+            responses:
+                200:
+                    description: Success response
+                    content:
+                        application/json:
+                            schema: DeviceGetResponseSchema
+                4xx:
+                    description: Record not found in the DB
+                    content:
+                        application/json:
+                            schema: DeviceGetFindErrorResponseSchema
+                4xy:
+                    description: Missing parameter in the request
+                    content:
+                        application/json:
+                            schema: DeviceGetParamErrorResponseSchema
+                5xx:
+                    description: Service fail response
+                    content:
+                        application/json:
+                            schema: InternalErrorResponseSchema
+        """
+    request = ApiRequest().parse_request(APP) 
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    LOGGER.info(f'request: {request}')
+    try:
+        data = manager.get_device(request.where) 
+        status_code = 200
+        response.set_data(data) 
+
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+   
+@APP.rotute(API_ROOT + '/v1/file/details', methods=['GET'])
+def get_file_details():
+    """
+    Get device route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+
+        ---
+        get:
+            summary: Get device 
+            parameters:
+            - name: name
+              in: query
+              description: "Name of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: Akira 
+            - name: mac_address
+              in: query
+              description: "Mac Address of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: 02:42:ac:11:22:33
+            responses:
+                200:
+                    description: Success response
+                    content:
+                        application/json:
+                            schema: DeviceGetResponseSchema
+                4xx:
+                    description: Record not found in the DB
+                    content:
+                        application/json:
+                            schema: DeviceGetFindErrorResponseSchema
+                4xy:
+                    description: Missing parameter in the request
+                    content:
+                        application/json:
+                            schema: DeviceGetParamErrorResponseSchema
+                5xx:
+                    description: Service fail response
+                    content:
+                        application/json:
+                            schema: InternalErrorResponseSchema
+        """
+    request = ApiRequest().parse_request(APP) 
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    LOGGER.info(f'request: {request}')
+    try:
+        data = manager.get_device(request.where) 
+        status_code = 200
+        response.set_data(data) 
+
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+     
+@APP.route(API_ROOT + '/v1/file/list', methods=['GET'])
+def list_file():
+    """
+    List devices route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+
+        ---
+        get:
+            summary: Get device 
+            parameters:
+            - name: name
+              in: query
+              description: "Name of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: Akira 
+            - name: mac_address
+              in: query
+              description: "Mac Address of the device (Necessary only name or mac_address)"
+              required: true
+              schema:
+                type: string
+                example: 02:42:ac:11:22:33
+            responses:
+                200:
+                    description: Success response
+                    content:
+                        application/json:
+                            schema: DeviceGetResponseSchema
+                4xx:
+                    description: Record not found in the DB
+                    content:
+                        application/json:
+                            schema: DeviceGetFindErrorResponseSchema
+                4xy:
+                    description: Missing parameter in the request
+                    content:
+                        application/json:
+                            schema: DeviceGetParamErrorResponseSchema
+                5xx:
+                    description: Service fail response
+                    content:
+                        application/json:
+                            schema: InternalErrorResponseSchema
+        """
+    request = ApiRequest().parse_request(APP) 
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    LOGGER.info(f'request: {request}')
+    try:
+        data = manager.list_device(request.where) 
+        status_code = 200
+        response.set_data(data) 
+
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
+@APP.route(API_ROOT + '/v1/file', methods=['POST'])
+def post_file():
+    """
+    Product delete route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+            ---
+            delete:
+                summary: Soft Product Delete
+                parameters:
+                - in: path
+                  name: uuid
+                  description: "Product Id"
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                    example: 4bcad46b-6978-488f-8153-1c49f8a45244
+                responses:
+                    200:
+                        description: Success response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteResponseSchema
+                    4xx:
+                        description: Error response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteErrorResponseSchema
+                    5xx:
+                        description: Service fail response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteErrorResponseSchema
+                    """
+    response = ApiResponse() 
+    response.set_hateos(True)
+    if 'data' in request.form and 'file' in request.files:
+        data = request.form['data']
+        data = json.loads(data)
+    else:
+        LOGGER.error("Data or file field missing")
+        error = ApiException(MessagesEnum.VALIDATION_ERROR) 
+        status_code = 400 
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    auth_token = str(data['auth_token']) 
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) >= 5 and auth_token in tokens):
+        del data['auth_token']
+        manager = FileManager(logger=LOGGER) 
+        manager.debug(DEBUG)
+        try:
+            data = manager.post_file(request.form['file'], data)  
+            status_code = 200
+            response.set_data(data)  
+            # hateos
+            response.links = None
+            set_hateos_meta(request, response) 
+        except CustomException as error:
+            LOGGER.error(error)
+            if not isinstance(error, ValidationException):
+                error = ApiException(MessagesEnum.CREATE_ERROR)
+            status_code = 400
+            if manager.exception:
+                error = manager.exception
+            response.set_exception(error)
+
+        return response.get_response(status_code)
+    
+@APP.route(API_ROOT + '/v1/file', methods=['PUT'])
+def update_file():
+    """
+    Device update route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+        ---
+        put:
+            summary: Update the Device info in the DB
+            requestBody:
+                description: 'Device to be created'
+                required: true
+                content:
+                    application/json:
+                        schema: DeviceUpdateSchema 
+            responses:
+                200:
+                    description: Success response (Responds only with the sent fields)
+                    content:
+                        application/json:
+                            schema: DeviceGetResponseSchema
+                4xx:
+                    description: Record not found in the DB
+                    content:
+                        application/json:
+                            schema: DeviceGetFindErrorResponseSchema
+                4xy:
+                    description: Missing parameter in the request
+                    content:
+                        application/json:
+                            schema: DeviceGetParamErrorResponseSchema
+                4yy:
+                    description: Who knows ?????????
+                    content:
+                        application/json:
+                            schema: UnkownErrorResponseSchema
+                5xx:
+                    description: Service fail response
+                    content:
+                        application/json:
+                            schema: InternalErrorResponseSchema
+            """
+    request = ApiRequest().parse_request(APP)
+    LOGGER.info(f'request: {request}')
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try:
+        data = manager.update_device(request.where)  
+        status_code = 200
+        response.set_data(data)  
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.UPDATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
+@APP.route(API_ROOT + '/v1/file', methods=['DELETE'])
+def delete_file():
+    """
+    Product delete route
+
+    :return Endpoint with RESTful pattern
+
+    # pylint: disable=line-too-long
+    See https://github.com/andersoncontreira/projects-guidelines#restful-e-hateos
+
+    :rtype flask.Response
+            ---
+            delete:
+                summary: Soft Product Delete
+                parameters:
+                - in: path
+                  name: uuid
+                  description: "Product Id"
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                    example: 4bcad46b-6978-488f-8153-1c49f8a45244
+                responses:
+                    200:
+                        description: Success response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteResponseSchema
+                    4xx:
+                        description: Error response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteErrorResponseSchema
+                    5xx:
+                        description: Service fail response
+                        content:
+                            application/json:
+                                schema: ProductSoftDeleteErrorResponseSchema
+                    """
+    request = ApiRequest().parse_request(APP)
+    LOGGER.info(f'request: {request}')
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    manager = DeviceManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try:
+        data = manager.delete_device(request.where)  
         status_code = 200
         response.set_data(data)  
         # hateos
