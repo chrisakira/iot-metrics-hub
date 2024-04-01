@@ -15,7 +15,7 @@ from application.helper import get_function_name
 from application.logging import get_logger
 from application.repositories.v1.alchemy.file_repository import FileRepository as AlchemyFileRepository
 from application.repositories.v1.redis.file_repository import FileRepository as RedisDataRepository
-from application.vos.data import FileVO
+from application.vos.file import FileVO
 from io import BytesIO
 import pytz
 import struct
@@ -54,14 +54,37 @@ class FileService:
 
     def debug(self, flag: bool = False):
         self.DEBUG = flag
-        self.file_repository.debug = self.DEBUG
+        self.alchemy_file_repository.debug = self.DEBUG
         if self.REDIS_ENABLED:
             self.redis_file_repository.debug = self.DEBUG
                 
-    def post_file(self, file, request):  
-        data = FileVO(request)
-        data.file = BytesIO(file.read())
-        self.alchemy_file_repository.create(data)
+    def post_file(self, file, request): 
+        List_required_fields=["mac_address"]
+          
+        if request == dict():
+            error = ValidationException(MessagesEnum.REQUEST_ERROR)
+            error.params = "Request is empty"
+            self.exception = error
+            raise self.exception
+            
+        data_vo = FileVO(request)
+        for required_fields in List_required_fields: 
+            if required_fields not in data_vo.__dict__:
+                error = ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
+                error.params = required_fields
+                self.exception = error
+                raise self.exception
+            
+        if "created_at" not in data_vo.__dict__:
+            data_vo.created_at = datetime.now(pytz.utc)
+        else:
+            data_vo.created_at = datetime.fromtimestamp(data_vo.created_at, pytz.utc)	
+        
+        data_vo.name = file.filename
+        data_vo.file_type = file.filename.split(".")[-1]
+        data_vo.file_size = len(file.read())
+        file.seek(0)
+        self.alchemy_file_repository.create(data_vo, file = file.read())
         if self.alchemy_file_repository._exception:
             self.exception = self.alchemy_file_repository._exception
             raise self.exception

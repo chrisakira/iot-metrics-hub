@@ -42,15 +42,13 @@ class DataRepository(AbstractRepository):
             raise self._exception 
         return True
 
-    def insert_array(self, data_array, metadata: DataVO):
+    def insert_array(self, data_array, metadata: DataVO, precision = 'ms'):
         new_timestamp = int(datetime.now().timestamp() * 1000)
-        insert_data = []
+        insert_data = [] 
         for data in data_array:
             if "timestamp" not in data:
-                self.logger.debug("Timestamp not found in data, adding current timestamp")
-                new_timestamp += 1
                 data.timestamp = new_timestamp
-            timestamp = data.timestamp
+            timestamp = int(data.timestamp)  
             del data.timestamp
             str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
             insert_data.append(str_data)
@@ -62,7 +60,7 @@ class DataRepository(AbstractRepository):
                 error.params = 'Connection not found'
                 self._exception = error
                 raise self._exception
-            self.connection.write_points(insert_data, time_precision='ms', batch_size=len(insert_data), protocol='line') 
+            self.connection.write_points(insert_data, time_precision=precision, batch_size=len(insert_data), protocol='line') 
         except Exception as err:
             self.logger.error(err)
             self._exception = err

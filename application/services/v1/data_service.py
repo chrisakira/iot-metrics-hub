@@ -40,12 +40,12 @@ def read_binary_file(file):
             int_value = struct.unpack('q', int_bytes)[0]
             int_value_ = int_value 
             
-            float_bytes = file.read(4)
+            float_bytes = file.read(8)
             if b'#EOF' in float_bytes:
                 break 
-            if len(float_bytes) < 4:
+            if len(float_bytes) < 8:
                 break
-            float_value = struct.unpack('f', float_bytes)[0] 
+            float_value = struct.unpack('d', float_bytes)[0] 
 
             
             int_value = file.read(4)
@@ -54,9 +54,7 @@ def read_binary_file(file):
             int_value = struct.unpack('i', int_value)[0] 
         except Exception as e:
             return data
-        data.append((float_value, int_value_, int_value))
-        
-
+        data.append({str(int_value):float_value,"timestamp":int_value_, "measurement":int_value})    
     return data
 class DataService:
     DEBUG = False
@@ -116,9 +114,7 @@ class DataService:
     
     def insert_array(self, request):  
         metadata = DataVO(request["meta_data"])
-        data = DataVO(request["data"])  
-        self.logger.info('metadata: {}'.format(metadata))
-        self.logger.info('data: {}'.format(data))
+        data = DataVO(request["data"])   
 
         tmp_array = []
 
@@ -148,24 +144,28 @@ class DataService:
         return True
     
        
-    def receive_file(self, file, headers):  
+    def receive_file(self, file, headers): 
         if file == b'':
             raise ValidationException(MessagesEnum.REQUEST_ERROR)
-        data = DataVO()
-        if(len(file) < 8):
-            return True
-        self.logger.info('file: {}'.format(len(file)))
-        parsed_bin_data = read_binary_file(file)
-        parsed_bin_data_count = len(parsed_bin_data) 
         
-        self.logger.info('parsed_bin_data_count: {}'.format(parsed_bin_data_count))
-        for bin_data in parsed_bin_data: 
-            self.logger.info('bin_data: {}'.format(bin_data))
-            # data.mac_address = "00:00:01:02:FF:FF"
-            # data.value = bin_data[0]
-            # data.timestamp = bin_data[1]
-            # data.measurement = bin_data[2]
-            # self.alchemy_data_repository.create(data) 
+        mac_value = headers['Cookie'].split("=")[1]
+        device = headers['Cookie'].split("=")[0]
+        metadata = DataVO()
+        metadata.mac_address=mac_value
+        metadata.table="Banana"
+        parsed_bin_data = read_binary_file(file)  
+        self.logger.info('parsed_bin_data size: {}'.format(len(parsed_bin_data)))        
+        data = []
+        for bin in parsed_bin_data:
+            if bin["measurement"] == 3 or bin["measurement"] == 4:
+                self.logger.info('bin: {}'.format(bin))
+            data_ = DataVO(bin) 
+            data.append(data_)
+        self.influxdb_data_repository.insert_array(data, metadata, 'u')
+        if self.influxdb_data_repository._exception:
+            self.exception = self.influxdb_data_repository._exception
+            raise self.exception
+        
         return True
 
 

@@ -31,7 +31,7 @@ class FileManager:
  
     def post_file(self, file, request: dict):   
         device_service = DeviceService(self.logger)
-        result = device_service.get_device({'mac_address': request['meta_data']['mac_address']})
+        result = device_service.get_device({'mac_address': request['mac_address']})
         if result is None:
             error = DatabaseException(MessagesEnum.FIND_ERROR)
             error.params = 'Device not found' 

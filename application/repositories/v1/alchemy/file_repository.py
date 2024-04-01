@@ -50,18 +50,19 @@ class FileRepository(AbstractRepository):
                 self.alchemy_session.close() 
         return response  
       
-    def create(self, file: FileVO):
+    def create(self, file_vo: FileVO, file):
         max_attempts = self._MAX_ATTEMPTS  
         attempts = 0  
         response = False  
         while(attempts < max_attempts):  
             self.alchemy_session = self.get_new_session() 
-            new_file = FileModelBase(**file.to_dict()) 
+            new_file = FileModelBase(**file_vo.to_dict(), file = file) 
             try:
                 self.alchemy_session.add(new_file)  
                 self.alchemy_session.commit() 
+                self.alchemy_session.refresh(new_file)  # Bind the file_model object to the current session before refreshing
                 self.alchemy_session.close()
-                response = True  
+                response = new_file.id  
                 return response 
             except Exception as err:  
                 attempts += 1 

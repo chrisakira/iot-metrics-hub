@@ -793,7 +793,7 @@ def log_device_v1():
 # *************
 # File
 # *************
-@APP.rotute(API_ROOT + '/v1/file', methods=['GET'])
+@APP.route(API_ROOT + '/v1/file', methods=['GET'])
 def get_file():
     """
     Get device route
@@ -872,7 +872,7 @@ def get_file():
 
     return response.get_response(status_code)
    
-@APP.rotute(API_ROOT + '/v1/file/details', methods=['GET'])
+@APP.route(API_ROOT + '/v1/file/details', methods=['GET'])
 def get_file_details():
     """
     Get device route
@@ -1072,23 +1072,29 @@ def post_file():
                     """
     response = ApiResponse() 
     response.set_hateos(True)
-    if 'data' in request.form and 'file' in request.files:
-        data = request.form['data']
-        data = json.loads(data)
+     
+    if 'data' in request.form and 'file' in request.files and request.form['data'] is not None and request.files['file'].filename != '':
+        form_data = request.form['data']
+        form_data = json.loads(form_data)
+        file =  request.files['file']
+        LOGGER.info(f"Json Data: {form_data}")
+        LOGGER.info(f"File_Name: {file.filename}")
     else:
         LOGGER.error("Data or file field missing")
-        error = ApiException(MessagesEnum.VALIDATION_ERROR) 
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Data or file field missing", "Data or file field missing" 
+        error.set_message_params()
         status_code = 400 
         response.set_exception(error) 
         return response.get_response(status_code)
-    auth_token = str(data['auth_token']) 
+    auth_token = str(form_data['auth_token']) 
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) >= 5 and auth_token in tokens):
-        del data['auth_token']
+        del form_data['auth_token']
         manager = FileManager(logger=LOGGER) 
         manager.debug(DEBUG)
         try:
-            data = manager.post_file(request.form['file'], data)  
+            data = manager.post_file(file, form_data)  
             status_code = 200
             response.set_data(data)  
             # hateos
@@ -1443,28 +1449,59 @@ def insert_aki_file():
     response = ApiResponse()
     response.set_hateos(True)
  
-    manager = DataManager(logger=LOGGER)
-    manager.debug(DEBUG)
-    try:  
-        data = manager.receive_file(request.get_data(),request.headers)  
-        status_code = 200
-        response.set_data(data)  
-        # hateos
-        response.links = None
-        set_hateos_meta(request, response) 
-    except CustomException as error:
-        LOGGER.error(error)
-        if not isinstance(error, ValidationException):
-            error = ApiException(MessagesEnum.CREATE_ERROR)
-        status_code = 400
-        if manager.exception:
-            error = manager.exception
+    if len(request.get_data()) < 17:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "measurement data", "body" 
+        error.set_message_params()
+        status_code = 406
+        response.set_exception(error) 
+        return response.get_response(status_code)
+ 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    device = request.headers['Cookie'].split("=")[0]
+    if "device" != device:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR) # Validation error, please review your params: value (%s) for param (%s)
+        error.params = request.headers['Cookie'], "Cookie" 
+        error.set_message_params()
+        status_code = 406
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) > 5 and auth_token in tokens):
+        manager = DataManager(logger=LOGGER)
+        manager.debug(DEBUG)
+        try:  
+            data = manager.receive_file(request.get_data(),request.headers)  
+            status_code = 200
+            response.set_data(data)  
+            # hateos
+            response.links = None
+            set_hateos_meta(request, response) 
+        except CustomException as error:
+            LOGGER.error(error)
+            if not isinstance(error, ValidationException):
+                error = ApiException(MessagesEnum.CREATE_ERROR)
+            status_code = 400
+            if manager.exception:
+                error = manager.exception
+            response.set_exception(error)
+    else:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
         response.set_exception(error)
-
     return response.get_response(status_code)
     
-    body = {"app": f'{APP_NAME}:{APP_VERSION}'}
-    return http_helper.create_response(body=body, status_code=200)
  
 # *************
 # Doc

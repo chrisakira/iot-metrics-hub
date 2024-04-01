@@ -27,17 +27,19 @@ class DeviceLogModel:
     type =          Column(String(255), nullable=True,                                              name='type')
     message =       Column(TEXT,        nullable=True,                                              name='message')
     timestamp =     Column(TIMESTAMP,   nullable=False, server_default=text('CURRENT_TIMESTAMP'),   name='timestamp')
-   
+    
 
 class FileModel:
     __tablename__ = 'files'
     id =            Column(Integer,     primary_key=True,                                           name='id')
     name =          Column(String(255), nullable=False, default="Akira",                            name='name',        unique=True)
-    mac_address =   Column(String(255), nullable=False, default="02:42:ac:11:22:33",                name='mac_address', unique=True)
-    description =   Column(TEXT,        nullable=False, default="Device description",               name='description')
-    file =          Column(LargeBinary, nullable=True,                                              name='file')
+    mac_address =   Column(String(255), nullable=False, default="02:42:ac:11:22:33",                name='mac_address')
+    description =   Column(TEXT,        nullable=True,  default="Device description",               name='description')
+    file =          Column(LargeBinary, nullable=False,                                             name='file')
+    file_size =     Column(Integer,     nullable=False, default=0,                                  name='file_size')
+    file_type =     Column(String(255), nullable=False, default="txt",                              name='file_type')
     created_at =    Column(TIMESTAMP,   nullable=False, server_default=text('CURRENT_TIMESTAMP'),   name='created_at')
-    updated_at =    Column(TIMESTAMP,   nullable=False, server_default=text('CURRENT_TIMESTAMP'),   name='updated_at')
+    updated_at =    Column(TIMESTAMP,   nullable=True,  server_default=text('CURRENT_TIMESTAMP'),   name='updated_at')
     deleted_at =    Column(TIMESTAMP,   nullable=True,  server_default=text('CURRENT_TIMESTAMP'),   name='deleted_at')
     delete_status = Column(Integer,     nullable=True,  default=0,                                  name='delete_status')
    

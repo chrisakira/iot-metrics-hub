@@ -17,6 +17,7 @@ class DataVO(AbstractVO):
     """
     def convert_value(self, value):
         converters = {
+            float:        lambda x: float(x),
             int:        lambda x: int(x),
             datetime:   lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z") if date_time_pattern.match(x) else str(x),
             str:        lambda x: str(x)

@@ -31,7 +31,7 @@ class MessagesEnum(IntEnum):
     LIST_ERROR = 11, 'common.error.list_error', 'Unable to return the list data, please review your request'
     FILTERS_ERROR = 12, 'common.error.filters_error', 'Filters must be informed'
     PARAM_REQUIRED_ERROR = 13, 'common.error.param_required_error', 'Parameter %s is required'
-    FIND_ERROR = 14, 'common.error.find_error', 'Unable to find the record'
+    FIND_ERROR = 14, 'common.error.find_error', 'Unable to find the record %s'
     INVALID_FILTER_ERROR = 15, 'common.error.invalid_filter_error', 'Invalid filter in request'
     INVALID_FIELD_FILTER_ERROR = 16, 'common.error.invalid_filter_error', \
         'Invalid filter value (%s) for filter (%s). Expected (%s)'

@@ -60,8 +60,17 @@ class DataManager:
         return data
     
     def receive_file(self, file, headers):
+        
+        device_service = DeviceService(self.logger)
+        result = device_service.get_device({'mac_address': headers['Cookie'].split("=")[1]}) 
+        if result is None:
+            error = DatabaseException(MessagesEnum.FIND_ERROR)
+            error.params = 'Device not found' 
+            self.exception = error
+            raise self.exception
+        
         data = self.data_service.receive_file(file, headers)
-        if (data is None) or self.data_service.exception:
+        if  self.data_service.exception:
             self.exception = self.data_service.exception
             raise self.exception
         return data 
