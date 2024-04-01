@@ -10,7 +10,9 @@
 !/target/integration/junit-report.xml
 !/target/component/junit-report.xml
 !/target/unit/junit-report.xml
-
+acme.json
+dynamic.yaml
+*/letsencrypt/*
 
 # Output lambda
 output/response.json

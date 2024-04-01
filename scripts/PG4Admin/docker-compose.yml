@@ -6,7 +6,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: "maekawa@alunos.utfpr.edu.br"
       PGADMIN_DEFAULT_PASSWORD: "AKIRAakira@1"
     ports:
-      - 8080:80
+      - 8088:80
     volumes:
       - pg4admin_data:/var/lib/pg4admin
     networks:

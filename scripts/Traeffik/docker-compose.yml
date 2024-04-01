@@ -1,11 +1,38 @@
+version: "3.3"
+
 services:
-  portainer:
-    image: portainer/portainer-ce:latest
+  traefik:
+    image: traefik:latest 
     ports:
-      - 9443:9443
+      - "80:80" 
+      - "8080:8080" 
+      - "443:443" 
+    command:
+      - --api.insecure=true 
+      - --api.dashboard=true   
+      - --providers.docker=true  
+      - --providers.docker.swarmMode=true
+      - --providers.docker.swarmModeRefreshSeconds=30
+      - --providers.docker.exposedbydefault=true  
+      - --providers.file.filename=/dynamic.yaml 
+      - --providers.docker.network=IoT_Metrics_Network  
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --certificatesresolvers.mytlschallenge.acme.tlschallenge=true
+      - --certificatesresolvers.mytlschallenge.acme.email=christopher.maekawa@gmail.com
+      - --certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json
+    
     volumes:
-      - data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-volumes:
-  data: 
+      - /var/run/docker.sock:/var/run/docker.sock 
+      - ./dynamic.yaml:/dynamic.yaml  
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - IoT_Metrics_Network  
+    deploy: 
+      replicas: 1
+      placement:
+        constraints:
+          - node.role==manager
+networks:
+  IoT_Metrics_Network:
+    external: true

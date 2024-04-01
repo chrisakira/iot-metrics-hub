@@ -12,9 +12,19 @@ services:
     ports:
       - 5000:5000
     networks:
-      - IoT_Metrics_Network
-    volumes:
-      - ./:/app
+      - IoT_Metrics_Network 
+    labels: 
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=IoT_Metrics_Network'
+      - "traefik.http.routers.grafana.rule=PathPrefix(`/iot-metrics-hub`)"
+      - "traefik.http.routers.grafana.entryPoints=https"
+      # - "traefik.http.routers.grafana.middlewares=grafana-mw"
+      # - "traefik.http.middlewares.grafana-mw.stripprefix.prefixes=/"
+      - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+      - "traefik.http.routers.grafana.service=iot-metrics-hub"
+      - "traefik.http.services.grafana.loadbalancer.server.port=5000"
+      - "traefik.http.services.grafana.loadBalancer.sticky.cookie=false"
+      - "traefik.http.services.grafana.loadBalancer.sticky.cookie.name=iot-metrics-hub"
 networks:
   IoT_Metrics_Network:
     external: true
