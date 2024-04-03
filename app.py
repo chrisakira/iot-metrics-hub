@@ -116,6 +116,30 @@ def alive():
                         application/json:
                             schema: HealthCheckSchema
             """
+    request = ApiRequest().parse_request(APP) 
+
+    status_code = 200
+    response = ApiResponse(ApiRequest(request))
+    response.set_hateos(True)
+
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     service = HealthCheckManager()
     return service.check() 
 
@@ -271,6 +295,24 @@ def get_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
@@ -350,6 +392,24 @@ def list_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
@@ -420,6 +480,24 @@ def create_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -494,6 +572,24 @@ def update_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -561,6 +657,24 @@ def delete_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -635,6 +749,24 @@ def get_device_list_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -702,6 +834,24 @@ def ping_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -769,6 +919,24 @@ def log_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -851,11 +1019,29 @@ def get_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    manager = DeviceManager(logger=LOGGER)
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
+    manager = FileManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
     try:
-        data = manager.get_device(request.where) 
+        data = manager.get_file(request.where) 
         status_code = 200
         response.set_data(data) 
 
@@ -930,6 +1116,24 @@ def get_file_details():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
@@ -1009,6 +1213,24 @@ def list_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
@@ -1087,29 +1309,44 @@ def post_file():
         status_code = 400 
         response.set_exception(error) 
         return response.get_response(status_code)
-    auth_token = str(form_data['auth_token']) 
-    tokens = str(os.getenv('auth_token'))
-    if(len(auth_token) >= 5 and auth_token in tokens):
-        del form_data['auth_token']
-        manager = FileManager(logger=LOGGER) 
-        manager.debug(DEBUG)
-        try:
-            data = manager.post_file(file, form_data)  
-            status_code = 200
-            response.set_data(data)  
-            # hateos
-            response.links = None
-            set_hateos_meta(request, response) 
-        except CustomException as error:
-            LOGGER.error(error)
-            if not isinstance(error, ValidationException):
-                error = ApiException(MessagesEnum.CREATE_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
         return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
+    manager = FileManager(logger=LOGGER) 
+    manager.debug(DEBUG)
+    try:
+        data = manager.post_file(file, form_data)  
+        status_code = 200
+        response.set_data(data)  
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
     
 @APP.route(API_ROOT + '/v1/file', methods=['PUT'])
 def update_file():
@@ -1165,6 +1402,24 @@ def update_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -1232,6 +1487,24 @@ def delete_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
+    if "Authorization" not in request.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:
@@ -1302,29 +1575,37 @@ def insert_data_v1():
     status_code = 200
     response = ApiResponse(request) 
     response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auth_token'))
-    if(len(auth_token) > 5 and auth_token in tokens):
-        del request['where']['auth_token']
-        LOGGER.info(f"""request: {request['where']}""")
-        manager = DataManager(logger=LOGGER)
-        manager.debug(DEBUG)
-        try: 
-            data = manager.insert_data(request['where'])
-            if manager.exception:
-                raise manager.exception 
-            response.set_data(data)
-            response.links = None
-        except Exception as err: 
-            status_code = 400
-            response.set_exception(err)
-            return response.get_response(status_code)
-    else:
+    
+    if "Authorization" not in request.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
+        error.params = "Authorization", "Header" 
         error.set_message_params()
-        status_code = 400 
+        status_code = 401
         response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
+    manager = DataManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try: 
+        data = manager.insert_data(request['where'])
+        if manager.exception:
+            raise manager.exception 
+        response.set_data(data)
+        response.links = None
+    except Exception as err: 
+        status_code = 400
+        response.set_exception(err)
+        return response.get_response(status_code)
     return response.get_response(status_code)
 
 @APP.route(API_ROOT + '/v1/data/array', methods=['POST'])
@@ -1373,29 +1654,37 @@ def insert_array_v1():
     status_code = 200
     response = ApiResponse(request) 
     response.set_hateos(True)
-    auth_token = str(request['where']['auth_token'])
-    tokens = str(os.getenv('auth_token'))
-    if(len(auth_token) > 5 and auth_token in tokens):
-        del request['where']['auth_token']
-        LOGGER.info(f"""request: {request['where']}""")
-        manager = DataManager(logger=LOGGER)
-        manager.debug(DEBUG)
-        try:  
-            data = manager.insert_array(request['where'])
-            if manager.exception:
-                raise manager.exception 
-            response.set_data(data)
-            response.links = None
-        except Exception as err: 
-            status_code = 400
-            response.set_exception(err)
-            return response.get_response(status_code)
-    else:
+    
+    if "Authorization" not in request.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(request['where']['auth_token']),"auth_token"
+        error.params = "Authorization", "Header" 
         error.set_message_params()
-        status_code = 400 
+        status_code = 401
         response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
+    manager = DataManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try:  
+        data = manager.insert_array(request['where'])
+        if manager.exception:
+            raise manager.exception 
+        response.set_data(data)
+        response.links = None
+    except Exception as err: 
+        status_code = 400
+        response.set_exception(err)
+        return response.get_response(status_code)
     return response.get_response(status_code)
 
 @APP.route(API_ROOT + '/v1/data/mf4', methods=['POST'])
@@ -1417,29 +1706,37 @@ def insert_mf4_file():
         status_code = 400 
         response.set_exception(error) 
         return response.get_response(status_code)
-    auth_token = str(data['auth_token']) 
-    tokens = str(os.getenv('auth_token'))
-    if(len(auth_token) >= 5 and auth_token in tokens):
-        del data['auth_token']
-        manager = DataManager(logger=LOGGER) 
-        manager.debug(DEBUG)
-        try:  
-            manager.process_MF4(request.files['file'], data)
-        except Exception as err:
-            LOGGER.error(err)
-            error = ApiException(MessagesEnum.LIST_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-
-    else:
-        LOGGER.error("Auth token failed")
+    
+  
+    if "Authorization" not in request.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = str(data['auth_token']),"auth_token"
+        error.params = "Authorization", "Header" 
         error.set_message_params()
-        status_code = 400 
+        status_code = 401
         response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+      
+    manager = DataManager(logger=LOGGER) 
+    manager.debug(DEBUG)
+    try:  
+        manager.process_MF4(request.files['file'], data)
+    except Exception as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
     return response.get_response(status_code)
 
 @APP.route(API_ROOT + '/v1/data/akira', methods=['POST'])
@@ -1457,14 +1754,6 @@ def insert_aki_file():
         response.set_exception(error) 
         return response.get_response(status_code)
  
-    if "Authorization" not in request.headers:
-        error = ApiException(MessagesEnum.VALIDATION_ERROR)
-        error.params = "Authorization", "Header" 
-        error.set_message_params()
-        status_code = 401
-        response.set_exception(error) 
-        return response.get_response(status_code)
-    
     device = request.headers['Cookie'].split("=")[0]
     if "device" != device:
         error = ApiException(MessagesEnum.VALIDATION_ERROR) # Validation error, please review your params: value (%s) for param (%s)
@@ -1474,31 +1763,40 @@ def insert_aki_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
-    tokens = str(os.getenv('auth_token'))
-    if(len(auth_token) > 5 and auth_token in tokens):
-        manager = DataManager(logger=LOGGER)
-        manager.debug(DEBUG)
-        try:  
-            data = manager.receive_file(request.get_data(),request.headers)  
-            status_code = 200
-            response.set_data(data)  
-            # hateos
-            response.links = None
-            set_hateos_meta(request, response) 
-        except CustomException as error:
-            LOGGER.error(error)
-            if not isinstance(error, ValidationException):
-                error = ApiException(MessagesEnum.CREATE_ERROR)
-            status_code = 400
-            if manager.exception:
-                error = manager.exception
-            response.set_exception(error)
-    else:
+    if "Authorization" not in request.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
         status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+    
+    manager = DataManager(logger=LOGGER)
+    manager.debug(DEBUG)
+    try:  
+        data = manager.receive_file(request.get_data(),request.headers)  
+        status_code = 200
+        response.set_data(data)  
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response) 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
         response.set_exception(error)
     return response.get_response(status_code)
     

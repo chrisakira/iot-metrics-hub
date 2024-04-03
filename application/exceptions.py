@@ -69,6 +69,7 @@ class EventException(CustomException):
         super(CustomException, self).__init__(message_enum.message, errors)
         self.code = message_enum.code
         self.label = message_enum.label
+        self.status_code = message_enum.status_code
         self.message = message_enum.message
         self.params = None
 
@@ -82,6 +83,7 @@ class ApiException(CustomException):
         super(CustomException, self).__init__(message_enum.message, errors)
         self.code = message_enum.code
         self.label = message_enum.label
+        self.status_code = message_enum.status_code
         self.message = message_enum.message
         self.params = None
 
@@ -95,6 +97,7 @@ class DatabaseException(ApiException):
         super(ApiException, self).__init__(message_enum, errors)
         self.code = message_enum.code
         self.label = message_enum.label
+        self.status_code = message_enum.status_code
         self.message = message_enum.message
         self.params = None
 
@@ -108,6 +111,7 @@ class FilterException(ApiException):
         super(ApiException, self).__init__(message_enum, errors)
         self.code = message_enum.code
         self.label = message_enum.label
+        self.status_code = message_enum.status_code
         self.message = message_enum.message
         self.params = None
 
@@ -120,6 +124,7 @@ class ValidationException(ApiException):
         """
         super(ApiException, self).__init__(message_enum, errors)
         self.code = message_enum.code
+        self.status_code = message_enum.status_code
         self.label = message_enum.label
         self.message = message_enum.message
         self.params = None
@@ -134,5 +139,6 @@ class ServiceException(CustomException):
         super(CustomException, self).__init__(message_enum.message, errors)
         self.code = message_enum.code
         self.label = message_enum.label
+        self.status_code = message_enum.status_code
         self.message = message_enum.message
         self.params = None

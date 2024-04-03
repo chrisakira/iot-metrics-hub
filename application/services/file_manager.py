@@ -44,3 +44,10 @@ class FileManager:
             raise self.exception
         return data
     
+    def get_file(self, request: dict):   
+        data = self.file_service.get_file(request)
+        if self.file_service.exception:
+            self.exception = self.file_service.exception
+            raise self.exception
+        return data
+    

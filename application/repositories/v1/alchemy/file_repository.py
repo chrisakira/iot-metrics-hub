@@ -20,7 +20,7 @@ class FileRepository(AbstractRepository):
     def __init__(self, logger=None, engine=None, alchemy_session=None):
         super().__init__(logger=None, engine=None, alchemy_session=None)
       
-    def get(self, fields: list = None, file=None):
+    def get(self, fields: list = None, fileVO=None):
         max_attempts = self._MAX_ATTEMPTS  
         attempts = 0 
         response = False  
@@ -28,8 +28,8 @@ class FileRepository(AbstractRepository):
             try:
                 self.alchemy_session = self.get_new_session()
                 query = self.alchemy_session.query(FileModelBase) 
-                if file is not None:
-                    for field, value in file.to_dict().items():
+                if fileVO is not None:
+                    for fileVO, value in fileVO.to_dict().items():
                         query = query.filter(getattr(FileModelBase, field) == value)
                 results = query.all()
                 if results is None:
@@ -37,10 +37,10 @@ class FileRepository(AbstractRepository):
                     return response
                 response = None
                 for result in results: 
-                    file = {}
+                    result = {}
                     for field in fields:
-                        file[field] = result.__dict__[field] 
-                    response = file
+                        result[field] = result.__dict__[field] 
+                    response = result
                 self.alchemy_session.close()
                 return response  
             except Exception as err:

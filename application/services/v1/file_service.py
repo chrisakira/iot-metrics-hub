@@ -67,27 +67,57 @@ class FileService:
             self.exception = error
             raise self.exception
             
-        data_vo = FileVO(request)
+        file_vo = FileVO(request)
         for required_fields in List_required_fields: 
-            if required_fields not in data_vo.__dict__:
+            if required_fields not in file_vo.__dict__:
                 error = ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
                 error.params = required_fields
                 self.exception = error
                 raise self.exception
             
-        if "created_at" not in data_vo.__dict__:
-            data_vo.created_at = datetime.now(pytz.utc)
+        if "created_at" not in file_vo.__dict__:
+            file_vo.created_at = datetime.now(pytz.utc)
         else:
-            data_vo.created_at = datetime.fromtimestamp(data_vo.created_at, pytz.utc)	
+            file_vo.created_at = datetime.fromtimestamp(file_vo.created_at, pytz.utc)	
         
-        data_vo.name = file.filename
-        data_vo.file_type = file.filename.split(".")[-1]
-        data_vo.file_size = len(file.read())
+        file_vo.name = file.filename
+        file_vo.file_type = file.filename.split(".")[-1]
+        file_vo.file_size = len(file.read())
         file.seek(0)
-        self.alchemy_file_repository.create(data_vo, file = file.read())
+        self.alchemy_file_repository.create(file_vo, file = file.read())
         if self.alchemy_file_repository._exception:
             self.exception = self.alchemy_file_repository._exception
             raise self.exception
         
         return True     
+               
+    def get_file(self, file, request): 
+        List_required_fields=["name", "id"]
+          
+        if request == dict():
+            error = ValidationException(MessagesEnum.REQUEST_ERROR)
+            error.params = "Request is empty"
+            self.exception = error
+            raise self.exception
+            
+        file_vo = FileVO(request)
+        found = False
+        key =  None
+        value  = None
+        for required_fields in List_required_fields: 
+            if required_fields in file_vo.__dict__:
+                found = True
+                
+        if found == False:
+            error = ValidationException(MessagesEnum.PARAM_REQUIRED_ERROR)
+            error.params = required_fields
+            self.exception = error
+            raise self.exception
+        
+        result = self.alchemy_file_repository.get(["file", "name"], file_vo)
+        if self.alchemy_file_repository._exception:
+            self.exception = self.alchemy_file_repository._exception
+            raise self.exception
+        
+        return result     
     
