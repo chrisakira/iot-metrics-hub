@@ -15,7 +15,7 @@ fi
 #echo $RUNNING_IN_CONTAINER
 
 # execute the boot
-bash ./scripts/boot.sh
+# bash ./scripts/boot.sh
 
 # execute the server
 python3 server.py
