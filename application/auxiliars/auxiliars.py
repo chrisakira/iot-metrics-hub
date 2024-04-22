@@ -4,7 +4,7 @@ from application.enums.messages import MessagesEnum
 from application.exceptions import ApiException, ValidationException, CustomException
 
 def check_basic_data_fields(request):
-    required_fields = ["auth_token", "meta_data", "data"]
+    required_fields = ["meta_data", "data"]
     required_fields_metadata = ["table", "mac_address"]
     if request['where'] == {}:
         error = ApiException(MessagesEnum.PARAM_REQUIRED_ERROR)

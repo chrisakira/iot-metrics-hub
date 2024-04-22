@@ -31,7 +31,7 @@ from application.services.file_manager import FileManager
 from application.services.data_manager import DataManager
 from application.services.device_manager import DeviceManager
 from application.migrations import models
-from flask   import request
+from flask import request as request_
 from io import BytesIO
 import json 
 import requests
@@ -116,13 +116,12 @@ def alive():
                         application/json:
                             schema: HealthCheckSchema
             """
-    request = ApiRequest().parse_request(APP) 
 
     status_code = 200
+    request = ApiRequest().parse_request(APP) 
     response = ApiResponse(ApiRequest(request))
-    response.set_hateos(True)
-
-    if "Authorization" not in request.headers:
+    response.set_hateos(True) 
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -130,7 +129,8 @@ def alive():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -295,7 +295,7 @@ def get_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -303,7 +303,8 @@ def get_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -312,6 +313,7 @@ def get_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -392,7 +394,7 @@ def list_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -400,7 +402,8 @@ def list_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -409,7 +412,7 @@ def list_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
-    
+    del request['where']['Authorization']
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
     LOGGER.info(f'request: {request}')
@@ -480,7 +483,7 @@ def create_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -488,7 +491,8 @@ def create_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -497,6 +501,7 @@ def create_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -572,7 +577,7 @@ def update_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -580,7 +585,8 @@ def update_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -589,6 +595,7 @@ def update_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -657,7 +664,7 @@ def delete_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -665,7 +672,8 @@ def delete_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -674,6 +682,7 @@ def delete_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -749,7 +758,7 @@ def get_device_list_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -757,7 +766,8 @@ def get_device_list_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -766,6 +776,7 @@ def get_device_list_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -834,7 +845,7 @@ def ping_device_v1():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -842,7 +853,8 @@ def ping_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -851,6 +863,7 @@ def ping_device_v1():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -918,8 +931,7 @@ def log_device_v1():
     status_code = 200
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
-
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['headers']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -927,7 +939,8 @@ def log_device_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['headers']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -935,7 +948,7 @@ def log_device_v1():
         error.set_message_params()
         status_code = 401
         response.set_exception(error)
-        return response.get_response(status_code)
+        return response.get_response(status_code) 
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1019,15 +1032,15 @@ def get_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
         status_code = 401
         response.set_exception(error) 
         return response.get_response(status_code)
-    
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1036,6 +1049,7 @@ def get_file():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = FileManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1116,7 +1130,7 @@ def get_file_details():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1124,7 +1138,8 @@ def get_file_details():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1133,6 +1148,7 @@ def get_file_details():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1213,7 +1229,7 @@ def list_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['where']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1221,7 +1237,8 @@ def list_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['where']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1230,6 +1247,7 @@ def list_file():
         status_code = 401
         response.set_exception(error)
         return response.get_response(status_code)
+    del request['where']['Authorization']
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1295,10 +1313,10 @@ def post_file():
     response = ApiResponse() 
     response.set_hateos(True)
      
-    if 'data' in request.form and 'file' in request.files and request.form['data'] is not None and request.files['file'].filename != '':
-        form_data = request.form['data']
+    if 'data' in request_.form and 'file' in request_.files and request_.form['data'] is not None and request_.files['file'].filename != '':
+        form_data = request_.form['data']
         form_data = json.loads(form_data)
-        file =  request.files['file']
+        file =  request_.files['file']
         LOGGER.info(f"Json Data: {form_data}")
         LOGGER.info(f"File_Name: {file.filename}")
     else:
@@ -1310,7 +1328,7 @@ def post_file():
         response.set_exception(error) 
         return response.get_response(status_code)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request_.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1318,7 +1336,7 @@ def post_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+    auth_token = request_.headers['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1336,7 +1354,6 @@ def post_file():
         response.set_data(data)  
         # hateos
         response.links = None
-        set_hateos_meta(request, response) 
     except CustomException as error:
         LOGGER.error(error)
         if not isinstance(error, ValidationException):
@@ -1402,7 +1419,7 @@ def update_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['headers']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1410,7 +1427,8 @@ def update_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['headers']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1418,7 +1436,7 @@ def update_file():
         error.set_message_params()
         status_code = 401
         response.set_exception(error)
-        return response.get_response(status_code)
+        return response.get_response(status_code) 
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1487,7 +1505,7 @@ def delete_file():
     response = ApiResponse(ApiRequest(request))
     response.set_hateos(True)
 
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['headers']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1495,7 +1513,8 @@ def delete_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['headers']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1503,7 +1522,7 @@ def delete_file():
         error.set_message_params()
         status_code = 401
         response.set_exception(error)
-        return response.get_response(status_code)
+        return response.get_response(status_code) 
     
     manager = DeviceManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1576,7 +1595,7 @@ def insert_data_v1():
     response = ApiResponse(request) 
     response.set_hateos(True)
     
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['headers']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1584,7 +1603,8 @@ def insert_data_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['headers']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1592,7 +1612,7 @@ def insert_data_v1():
         error.set_message_params()
         status_code = 401
         response.set_exception(error)
-        return response.get_response(status_code)
+        return response.get_response(status_code) 
     
     manager = DataManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1655,7 +1675,7 @@ def insert_array_v1():
     response = ApiResponse(request) 
     response.set_hateos(True)
     
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request['headers']:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1663,7 +1683,8 @@ def insert_array_v1():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+
+    auth_token = request['headers']['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1671,7 +1692,7 @@ def insert_array_v1():
         error.set_message_params()
         status_code = 401
         response.set_exception(error)
-        return response.get_response(status_code)
+        return response.get_response(status_code) 
     
     manager = DataManager(logger=LOGGER)
     manager.debug(DEBUG)
@@ -1697,8 +1718,8 @@ def insert_mf4_file():
     status_code = 200
     response = ApiResponse() 
     response.set_hateos(True)
-    if 'data' in request.form and 'file' in request.files:
-        data = request.form['data']
+    if 'data' in request_.form and 'file' in request_.files:
+        data = request_.form['data']
         data = json.loads(data)
     else:
         LOGGER.error("Data or file field missing")
@@ -1708,7 +1729,7 @@ def insert_mf4_file():
         return response.get_response(status_code)
     
   
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request_.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1716,7 +1737,7 @@ def insert_mf4_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+    auth_token = request_.headers['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1729,7 +1750,7 @@ def insert_mf4_file():
     manager = DataManager(logger=LOGGER) 
     manager.debug(DEBUG)
     try:  
-        manager.process_MF4(request.files['file'], data)
+        manager.process_MF4(request_.files['file'], data)
     except Exception as err:
         LOGGER.error(err)
         error = ApiException(MessagesEnum.LIST_ERROR)
@@ -1746,7 +1767,7 @@ def insert_aki_file():
     response = ApiResponse()
     response.set_hateos(True)
  
-    if len(request.get_data()) < 17:
+    if len(request_.get_data()) < 17:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "measurement data", "body" 
         error.set_message_params()
@@ -1754,16 +1775,16 @@ def insert_aki_file():
         response.set_exception(error) 
         return response.get_response(status_code)
  
-    device = request.headers['Cookie'].split("=")[0]
+    device = request_.headers['Cookie'].split("=")[0]
     if "device" != device:
         error = ApiException(MessagesEnum.VALIDATION_ERROR) # Validation error, please review your params: value (%s) for param (%s)
-        error.params = request.headers['Cookie'], "Cookie" 
+        error.params = request_.headers['Cookie'], "Cookie" 
         error.set_message_params()
         status_code = 406
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    if "Authorization" not in request.headers:
+    if "Authorization" not in request_.headers:
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
         error.params = "Authorization", "Header" 
         error.set_message_params()
@@ -1771,7 +1792,7 @@ def insert_aki_file():
         response.set_exception(error) 
         return response.get_response(status_code)
     
-    auth_token = request.headers['Authorization']
+    auth_token = request_.headers['Authorization']
     tokens = str(os.getenv('auth_token'))
     if(len(auth_token) != 27 or auth_token not in tokens):
         error = ApiException(MessagesEnum.VALIDATION_ERROR)
@@ -1784,12 +1805,11 @@ def insert_aki_file():
     manager = DataManager(logger=LOGGER)
     manager.debug(DEBUG)
     try:  
-        data = manager.receive_file(request.get_data(),request.headers)  
+        data = manager.receive_file(request_.get_data(),request_.headers)  
         status_code = 200
         response.set_data(data)  
         # hateos
-        response.links = None
-        set_hateos_meta(request, response) 
+        response.links = None 
     except CustomException as error:
         LOGGER.error(error)
         if not isinstance(error, ValidationException):

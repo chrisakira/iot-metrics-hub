@@ -104,6 +104,7 @@ class ApiRequest:
         self.server_type = parsed_request.server_type
         self.query_string = parsed_request.query_string
         self.query_string_args = parsed_request.query_string_args
+        self.headers = parsed_request.headers
         self._request = request
 
         return self

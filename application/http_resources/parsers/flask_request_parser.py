@@ -45,6 +45,9 @@ class FlaskRequestParser:
 
         # Headers
         if not helper.empty(request.headers):
+            self.headers = dict(request.headers)  # Convert headers to a dictionary
+            
+        if not helper.empty(request.headers):
             if 'host' in request.headers:
                 self.host = request.headers['host']
         # path
@@ -121,7 +124,6 @@ class FlaskRequestParser:
             # form-urlenconded or other
             else:
                 
-                print("Batata")
                 request_form = request.form
                 if helper.empty(request_form):
                     if not helper.empty(request.data):

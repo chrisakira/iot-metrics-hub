@@ -157,8 +157,6 @@ class DataService:
         self.logger.info('parsed_bin_data size: {}'.format(len(parsed_bin_data)))        
         data = []
         for bin in parsed_bin_data:
-            if bin["measurement"] == 3 or bin["measurement"] == 4:
-                self.logger.info('bin: {}'.format(bin))
             data_ = DataVO(bin) 
             data.append(data_)
         self.influxdb_data_repository.insert_array(data, metadata, 'u')
@@ -191,8 +189,8 @@ class DataService:
         
         data_array = []
         for tmp in tmp_array:
-            data_array.append(DataVO(tmp)) 
-             
+            data_array.append(DataVO(tmp))  
+            
         if len(tmp_array) == 1:
             self.influxdb_data_repository.insert_mf4(data, metadata)
         else:

@@ -95,14 +95,14 @@ class DataRepository(AbstractRepository):
  
     def insert_array_mf4(self, data_array, metadata: DataVO): 
         insert_data = []
+        self.logger.info(f"Metadata : {metadata}")
         for data in data_array:
-            if "timestamp_CG_0" not in data:
-                self.logger.debug("Timestamp not found in data, adding current timestamp")
+            if not any(key.startswith("timestamp_CG") for key in data):
                 error = DatabaseException(MessagesEnum.VALIDATION_ERROR)
                 error.params = 'Timestamp not found in data'
                 self._exception = error
                 raise self._exception
-            timestamp = data.timestamp_CG_0 
+            timestamp = int(next(value for key, value in data.to_dict().items() if key.startswith("timestamp_CG")))
             str_data =str(metadata.table) +"," + f'mac_address={metadata.mac_address} ' + ",".join([f"{key}={value}" for key, value in data.to_dict().items()]) + " " + str(timestamp)
             insert_data.append(str_data)
  
