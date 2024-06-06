@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   traefik:
-    image: traefik:latest 
+    image: traefik:v2.11.3
     ports:
       - "80:80" 
       - "8080:8080" 
@@ -21,10 +21,9 @@ services:
       - --certificatesresolvers.mytlschallenge.acme.tlschallenge=true
       - --certificatesresolvers.mytlschallenge.acme.email=christopher.maekawa@gmail.com
       - --certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json
-    
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock 
-      - ./dynamic.yaml:/dynamic.yaml  
+      - ./dynamic.yaml:/dynamic.yaml:ro
       - ./letsencrypt:/letsencrypt
     networks:
       - IoT_Metrics_Network  
