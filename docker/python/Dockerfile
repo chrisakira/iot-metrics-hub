@@ -45,6 +45,7 @@ RUN apt-get update \
         libxml2-dev \
         libxslt-dev \
         python-dev \ 
+        libjpeg-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
@@ -60,6 +61,15 @@ RUN wget --no-check-certificate -O - https://apt.kitware.com/keys/kitware-archiv
     echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main" > /etc/apt/sources.list.d/kitware.list
 
 RUN apt-get install -y --no-install-recommends cmake && rm -rf /var/lib/apt/lists/*
+
+
+# Install Rust compiler
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && . $HOME/.cargo/env \
+    && rustup default stable
+
+# Ensure Rust is in the PATH 
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt 
