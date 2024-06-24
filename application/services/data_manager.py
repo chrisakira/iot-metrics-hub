@@ -58,7 +58,7 @@ class DataManager:
             self.exception = self.data_service.exception
             raise self.exception
         return data
-    
+     
     def receive_file(self, file, headers):
         
         device_service = DeviceService(self.logger)
@@ -90,7 +90,15 @@ class DataManager:
             raise self.exception
         return data
  
+    def receive_JJ(self, file, headers):
+        
+        data = self.data_service.receive_JJ(file, headers)
+        if  self.data_service.exception:
+            self.exception = self.data_service.exception
+            raise self.exception
+        return data 
  
+    
  
  
  

@@ -26,6 +26,8 @@ import pytz
 import struct
 import io
 import ast
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def read_binary_file(file):
     data = []
@@ -143,7 +145,7 @@ class DataService:
         
         return True
     
-       
+        
     def receive_file(self, file, headers): 
         if file == b'':
             raise ValidationException(MessagesEnum.REQUEST_ERROR)
@@ -199,6 +201,72 @@ class DataService:
         
         data_array = []  
         return True
+
+        
+    def receive_JJ(self, file, headers): 
+        if file == b'':
+            raise ValidationException(MessagesEnum.REQUEST_ERROR)
+                
+        file_content = file.read()
+        file_ = BytesIO(file_content)
+
+        # Reset the buffer position to the beginning
+        file_.seek(0)
+
+        # Read the CSV file into a pandas DataFrame
+        data = pd.read_csv(file_, sep=';', usecols=[0,1], header=0)
+        
+        # Se os nomes das colunas forem diferentes, ajustá-los conforme necessário
+        if 'col_1' not in data.columns or 'col_2' not in data.columns:
+            data.columns = ['col_1', 'col_2']  # Ajustar os nomes conforme necessário
+        data_1 = data['col_1']
+        data_2 = data['col_2']
+        data_index = len(data_1)
+        initial_index = int(data_1.idxmax() + data_1.idxmax()*0.1)
+        min = int(0)
+        max = int(0)
+        downs = int(0)
+        angle = bool(False)
+        i = initial_index
+        while i < data_index:
+            if data_2[i+1] < (data_2[i]+3) and angle == False:
+                angle = True
+                downs += 1    
+                max += data_1[i]
+            
+            if data_2[i+1] > (data_2[i]+3) and angle == True:
+                angle = False
+                
+            if downs >= 2:
+                max = max/2 
+                break
+            
+            i += 1
+            
+        i = initial_index
+        while i < data_index:
+            if (data_1[i] < data_2[i]):
+                if (data_2[i] < 114):
+                    min = data_1[i]
+                    break
+            i += 1
+        # Plot the data
+        # Add circles at specific points
+        plt.plot(data_1.index, data_1, color = 'black')
+        plt.plot(data_2.index, data_2, color = 'blue')
+        plt.axhline(y=max, color='r', linestyle='--')
+        plt.axhline(y=min, color='g', linestyle='--')
+        plt.text(len(data_1)*0.8, max, 'Max Pressure: ' + str(max), color='r', ha='left', va='bottom')
+        plt.text(len(data_1)*0.8, min, 'Min Pressure: ' + str(min), color='g', ha='left', va='bottom')
+        plt.xlabel('X-axis')
+        plt.ylabel('Y-axis')
+        plt.title('Data Plot')
+        plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close()
+        return buf
         
 ################## Default operations ##################
     def list(self, request: dict):

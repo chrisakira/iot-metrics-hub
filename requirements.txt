@@ -29,3 +29,5 @@ mdfreader
 psycopg2-binary
 mysqlclient
 influxdb
+pandas
+matplot

@@ -31,7 +31,7 @@ from application.services.file_manager import FileManager
 from application.services.data_manager import DataManager
 from application.services.device_manager import DeviceManager
 from application.migrations import models
-from flask import request as request_
+from flask import send_file, make_response, request as request_
 from io import BytesIO
 import json 
 import requests
@@ -1812,6 +1812,66 @@ def insert_aki_file():
             error = manager.exception
         response.set_exception(error)
     return response.get_response(status_code)
+
+@APP.route(API_ROOT + '/v1/JJ', methods=['POST'])
+def roles_JJ():     
+
+    
+    status_code = 200
+    response = ApiResponse() 
+    response.set_hateos(True)
+    if 'data' in request_.form and 'file' in request_.files:
+        data = request_.form['data']
+        data = json.loads(data)
+    else:
+        LOGGER.error("Data or file field missing")
+        error = ApiException(MessagesEnum.VALIDATION_ERROR) 
+        status_code = 400 
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+  
+    if "Authorization" not in request_.headers:
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error) 
+        return response.get_response(status_code)
+    
+    auth_token = request_.headers['Authorization']
+    tokens = str(os.getenv('auth_token'))
+    if(len(auth_token) != 27 or auth_token not in tokens):
+        error = ApiException(MessagesEnum.VALIDATION_ERROR)
+        error.params = "Authorization", "Header" 
+        error.set_message_params()
+        status_code = 401
+        response.set_exception(error)
+        return response.get_response(status_code)
+      
+    manager = DataManager(logger=LOGGER) 
+    manager.debug(DEBUG)
+    try:  
+        data = manager.receive_JJ(request_.files['file'],data)  
+        status_code = 200
+        response = make_response(data.read())
+        response.headers.set('Content-Type', 'image/png')
+        response.headers.set('Content-Disposition', 'attachment', filename='plot.png')
+        return response
+        response.set_data(data)  
+        # hateos
+        response.links = None 
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+    return response.get_response(status_code)
+
+
     
  
 # *************
