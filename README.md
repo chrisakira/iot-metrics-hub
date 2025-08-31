@@ -85,6 +85,14 @@ sudo apt install libmariadb-dev libmysqlclient-dev -y
 python3 -m pip install --user --upgrade pip  
 ``` 
 
+For Arch linux environments 
+
+```bash 
+sudo pacman -Sy git zip python-pip net-tools pkg-config
+sudo pacman -S mariadb-libs mariadb-clients
+``` 
+
+
 ### Install Docker
 ```bash
 curl -fsSL https://get.docker.com -o get-docker.sh
